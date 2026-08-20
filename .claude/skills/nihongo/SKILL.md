@@ -13,6 +13,11 @@ Read, in order:
 2. `me/profile.md` — rung, goal, script, cadence, instruction language
 3. `me/progress.md` — grammar covered, weak-point ranking
 4. `me/srs/deck.md` — what's due
+5. `me/vocabulary.md` **if it exists** — WaniKani ground truth on vocabulary and kanji
+
+`me/vocabulary.md` outranks the vocabulary section of `me/progress.md`, which is a hand-maintained approximation of the same thing. **Guru (stage 5) and above counts as known** — never re-teach it, but use it freely in example sentences. Apprentice items are still being drilled on WaniKani; don't assume them and don't test them here.
+
+If it's missing, `/nihongo-sync` creates it. Don't block a session on that — just say so in one line at the close.
 
 **If `me/profile.md` doesn't exist, stop and run `/nihongo-setup` instead.** Don't guess at a level.
 
