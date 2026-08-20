@@ -53,10 +53,16 @@ Cap at 8 items. If more are due, take the shortest intervals and leave the rest 
 
 ## Phase 3 — Close
 
+Do the bookkeeping **silently**. Read the Response format section of `CLAUDE.md` first if you haven't.
+
 - Add every new word and every mistake to `me/srs/deck.md` at `interval: 1, due: 1`.
-- Update `me/progress.md`: promote recurring weak points (say that they recurred and over how many sessions), move resolved ones to Resolved, rewrite "Next session focus".
-- Append to `me/journal/YYYY-MM-DD.md`: what was taught, the learner's **raw unedited attempts**, and your corrections. The raw text is the point — it's the only record of what they actually produce over time.
-- One sentence to the learner on what to focus on next. Not a session summary; they were there.
+- Update `me/progress.md`: promote recurring weak points (noting how many sessions), move resolved ones to Resolved, rewrite "Next session focus".
+- Append to `me/journal/YYYY-MM-DD.md`: what was taught, the learner's **raw unedited attempts**, your corrections, and any post-mortem on your own tutoring errors. The raw text is the point — it's the only record of what they actually produce.
+- Check `me/questions.md`. Anything asked three or more times is a real gap; fold it into "Next session focus".
+
+Then say **one line** to the learner: what to work on next. That's the entire close.
+
+Not allowed in the closing message: a summary of the session, a list of files you touched, a recap of their score, or commentary on your own performance. All of that goes in the journal.
 
 ## Advancing
 

@@ -16,9 +16,18 @@ Then, inside Claude Code:
 |---|---|
 | **First time** | `/nihongo-setup` — a 5-minute interview, once ever |
 | **Every day after** | `/nihongo` — that's the whole thing |
+| **Quick question** | `/nihongo-ask` — one word or rule, answered and turned into a flashcard |
 | **Studying with someone** | `/nihongo-buddy export`, send them the file |
 
-Three commands total. Everything else is optional reading.
+Everything else is optional reading.
+
+## Quick questions
+
+`/nihongo-ask` is for the questions that come up away from a session — *what's the word for station? is きみ rude? why is this wrong?*
+
+It answers short, at your level, and **silently turns the answer into a flashcard.** That last part is the point: a word you asked for because you wanted it in the moment is the highest-retention word in your deck, so none of those questions get wasted.
+
+It also logs to `me/questions.md`, which closes a loop — anything you ask three times is a gap rather than curiosity, and it gets promoted into a real lesson.
 
 ## What your first session looks like
 
