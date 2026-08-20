@@ -17,6 +17,7 @@ Then, inside Claude Code:
 | **First time** | `/nihongo-setup` — a 5-minute interview, once ever |
 | **Every day after** | `/nihongo` — that's the whole thing |
 | **Quick question** | `/nihongo-ask` — one word or rule, answered and turned into a flashcard |
+| **Drill on your phone** | `/nihongo-drill` — builds a flashcard page from your own deck |
 | **Studying with someone** | `/nihongo-buddy export`, send them the file |
 
 Everything else is optional reading.
@@ -28,6 +29,16 @@ Everything else is optional reading.
 It answers short, at your level, and **silently turns the answer into a flashcard.** That last part is the point: a word you asked for because you wanted it in the moment is the highest-retention word in your deck, so none of those questions get wasted.
 
 It also logs to `me/questions.md`, which closes a loop — anything you ask three times is a gap rather than curiosity, and it gets promoted into a real lesson.
+
+## Drilling
+
+`/nihongo-drill` builds a flashcard page from your deck and publishes it as a private Artifact — tap to reveal, both directions, filter by section, and mora beat counts on single words (がっこう is four beats, and the small っ is one of them).
+
+**It's a practice tool, not the system of record.** The spaced-repetition schedule stays in `me/srs/deck.md` and only `/nihongo` touches it, so drill as much as you like — nothing you do on the page changes your intervals. A run ends by listing what you missed, to bring back to a session.
+
+The page carries your deck's notes across, which is the part that matters: the register warnings and false-friend traps travel with the cards. Re-run the command after a session adds vocabulary; it republishes to the same URL so a phone bookmark keeps working.
+
+Your artifact contains your vocabulary, so its URL is no use to anyone else — but the skill ships with the repo. A study buddy clones and runs it against their own deck.
 
 ## What your first session looks like
 
