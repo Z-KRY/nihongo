@@ -16,8 +16,10 @@ Then, inside Claude Code:
 |---|---|
 | **First time** | `/nihongo-setup` — a 5-minute interview, once ever |
 | **Every day after** | `/nihongo` — that's the whole thing |
+| **Conversation** | `/nihongo-talk` — chat in Japanese, capped to words you actually know |
 | **Quick question** | `/nihongo-ask` — one word or rule, answered and turned into a flashcard |
 | **Drill on your phone** | `/nihongo-drill` — builds a flashcard page from your own deck |
+| **Using WaniKani too?** | `/nihongo-sync` — pulls your progress so sessions stop guessing |
 | **Studying with someone** | `/nihongo-buddy export`, send them the file |
 
 Everything else is optional reading.
@@ -29,6 +31,14 @@ Everything else is optional reading.
 It answers short, at your level, and **silently turns the answer into a flashcard.** That last part is the point: a word you asked for because you wanted it in the moment is the highest-retention word in your deck, so none of those questions get wasted.
 
 It also logs to `me/questions.md`, which closes a loop — anything you ask three times is a gap rather than curiosity, and it gets promoted into a real lesson.
+
+## Conversation
+
+`/nihongo-talk` is the one piece you can't get elsewhere: a conversation partner **capped to vocabulary you demonstrably know** — WaniKani items at Guru or above, plus what sessions have taught, plus grammar actually verified.
+
+A generic AI chat in Japanese will use whatever vocabulary it likes and you'll drown. A real Japanese person can't calibrate to your specific few hundred words either — nobody can hold that in their head. A skill can, because it's written down in your files.
+
+It doesn't correct you mid-flow, because that kills the thing it's building. Corrections come at the end, and only the ones that broke comprehension or carry a register problem. What it's really collecting is **what you wanted to say and couldn't** — a word you reached for mid-conversation is the highest-retention word there is, and each one goes into your deck.
 
 ## Drilling
 

@@ -3,19 +3,34 @@
 How the pieces fit, and which system owns what. Written 2026-08-11.
 
 ```
-   WaniKani  ──read──▶   this repo   ◀──read/write──▶   Anki
-   (curriculum)          (teaching)                    (scheduling)
+   WaniKani ──read──▶  this repo  ──▶ /nihongo      teach grammar
+   (the spine)         (the hub)   ──▶ /nihongo-talk  use it under pressure
+                                   ──▶ /nihongo-ask   answer, capture
 ```
 
-Three tools, three jobs, no overlap. The overlap is what causes trouble.
+## Why the split is clean rather than arbitrary
 
-## Who owns what
+**WaniKani teaches no grammar whatsoever.** That's their design, not a flaw — it's why people pair it with Genki or Bunpro. So the tutor's job is exactly the complement, and the two never overlap.
 
-| | Owns | Doesn't |
+| Layer | Owns | Never does |
 |---|---|---|
-| **WaniKani** | Its own kanji/vocab curriculum and SRS | Anything you add. Content is fixed |
-| **This repo** | Teaching: correction, register, grammar, weak-point tracking | Scheduling |
-| **Anki** | Spaced repetition for everything taught here | Knowing what you got wrong and why |
+| **WaniKani** | Kanji + its vocabulary, on its own SRS | Grammar. Any of it |
+| **This repo** | Grammar, correction, register, production, conversation | Re-teach a WaniKani item |
+| **The hub** | The merged picture of what the learner knows | Scheduling WaniKani's content |
+
+WaniKani is the spine and the tutor works around it: never teaching vocabulary WK is about to introduce, always free to use anything at Guru or above.
+
+## Rejected: the "digital school" artifact
+
+Considered and declined — a single artifact hosting WaniKani reviews plus lessons plus chat.
+
+It would reimplement three things worse than they already exist. WaniKani's value *is* their scheduler and answer validation (typo tolerance, on'yomi/kun'yomi warnings, mnemonics) — rebuilding that interface means rebuilding all of it. The tutor's value is judgement on novel input, which needs a model in a loop, not a page. And an artifact runs on claude.ai and cannot write repo state.
+
+Steelmanned: with runtime capabilities a page *could* host a Japanese chat. Declined anyway — it'd be a worse chat UI than the one the learner is already in, couldn't read the progress files, and would split tutoring across two places.
+
+**The general principle: a portal adds a layer without adding capability.** Things feeling scattered is a connective-tissue problem, not a front-end one.
+
+An artifact *dashboard* — read-only, showing the merged picture — is legitimate but low priority. `/nihongo-drill` is the only artifact so far.
 
 ## WaniKani — read-only, permanently
 
@@ -28,30 +43,25 @@ The read is the valuable half anyway. `/nihongo-sync` pulls every unlocked item 
 
 This exists because the learner's level was mis-set twice in the first session — once too high, once too low — from inferring vocabulary out of a few sentences. Guessing was the bottleneck on tutoring quality.
 
-## Anki — the bidirectional leg
+## Conversation — the piece nothing else provides
 
-Via AnkiConnect, an add-on exposing `localhost:8765`. Requires Anki desktop running.
+`/nihongo-talk` is a conversation partner **constrained to vocabulary the learner demonstrably knows**: WaniKani items at Guru or above, plus the deck's active rotation, plus grammar actually verified in `me/progress.md`.
 
-- **Read:** existing decks, so cards you already have aren't duplicated.
-- **Write:** new cards from sessions and from `/nihongo-ask`.
+That constraint is the whole value, and it's unavailable anywhere else. A generic AI chat uses whatever vocabulary it likes and the learner drowns. A real Japanese person can't calibrate to a specific 300 words either — nobody can hold that in their head. A skill can, because it's written down.
 
-⚠️ AnkiConnect binds a local HTTP server. On a managed Mac that's the same shape of thing that has tripped endpoint security here before — worth clearing with IT rather than discovering.
+It also closes the loop. Drills test retrieval on demand; conversation tests it under pressure, and the two fail differently. Words wanted mid-conversation are the highest-signal vocabulary data available, and grammar that collapses live but held on paper is recorded as a distinct failure mode — only the live one predicts real conversation.
 
-## Spaced repetition lives in exactly one place
+## Anki — deferred, not cancelled
 
-**Decision: Anki owns scheduling for everything taught here.** Three schedulers disagreeing about when you should see a word is worse than one, and Anki's is the one with a real algorithm and a phone app.
+**Revised 2026-08-11.** An earlier decision here made Anki the owner of spaced repetition. Integrating WaniKani removed most of Anki's job, so that's withdrawn.
 
-Consequences at cutover:
+WaniKani now schedules kanji and vocabulary. What's left for Anki is grammar patterns, frames, survival phrases and register facts — **about 40 cards.** Markdown handles 40 cards fine. Anki earns its install, its add-on, and the endpoint-security conversation at a few hundred, not forty.
 
-- `me/srs/deck.md` loses its `interval` / `due` columns and becomes a **staging area** — taught, not yet exported.
-- Sessions end by pushing new cards to Anki instead of adjusting intervals by hand.
-- `/nihongo-drill` and its artifact are **retired**. Anki does flashcards better; the only reason the drill existed was that the deck maintained itself, and once cards flow to Anki that advantage moves with them.
+**Trigger to revisit:** when reviewing the deck by hand becomes annoying. Until then `me/srs/deck.md` keeps its intervals and stays authoritative, and `/nihongo-drill` stays live.
 
-### Not yet executed
+When it does happen, order matters: wire Anki, verify a round-trip, *then* demote the deck to a staging area and retire the drill. Not before — doing it first leaves no scheduler and nothing to drill on.
 
-The decision is recorded; the cutover is pending Anki being installed. Stripping intervals now would leave no scheduler at all, and retiring the drill now would leave nothing to drill on. **Order matters: wire Anki, verify a round-trip, then demote the deck and retire the drill.** Not before.
-
-Until then `me/srs/deck.md` keeps its intervals and stays authoritative, and the drill artifact stays live.
+⚠️ AnkiConnect binds a local HTTP server on `:8765`. On a managed Mac that's the same shape of thing that has tripped endpoint security here before — worth clearing with IT rather than discovering.
 
 ## What ships when someone clones this
 
@@ -65,7 +75,19 @@ Credentials live outside the repo entirely — `~/.config/nihongo/wanikani.token
 |---|---|
 | `/nihongo-setup` | First run. Interview → `me/` |
 | `/nihongo` | A session: review, teach, drill, write state |
+| `/nihongo-talk` | Conversation, capped to vocabulary you actually know |
 | `/nihongo-ask` | One quick question → answer + a card |
 | `/nihongo-sync` | Pull WaniKani progress |
-| `/nihongo-drill` | Build the flashcard artifact *(retired at Anki cutover)* |
+| `/nihongo-drill` | Build the flashcard artifact |
 | `/nihongo-buddy` | Export/import a profile, generate paired activities |
+
+## The loop
+
+```
+WaniKani  ─── vocabulary ──▶  /nihongo  ─── grammar ──▶  /nihongo-talk
+    ▲                            ▲                            │
+    │                            └──── gaps, collapses ────────┘
+    └── keeps its own schedule                     /nihongo-ask ┘
+```
+
+Conversation is what generates the next session's material: words wanted and not had, patterns that held on paper and failed live. Without that leg the tutor is guessing what to teach next — which is the same failure that mis-set the level twice on day one.
