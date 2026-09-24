@@ -19,18 +19,25 @@ Graded readers built from this learner's own WaniKani progress, published into a
 
 Before writing anything, read the artifact's database with `ArtifactData`:
 
-- `marks` — every word or line they flagged. `type: "word"` is a **vocabulary** gap; `type: "grammar"` is a **grammar** gap. They need opposite fixes, which is the entire reason the page distinguishes them.
-- `quiz` — comprehension results. A wrong answer on a question whose sentence carries no marks is the interesting case: they *thought* they understood.
+- `marks` — every reveal, at one of three `level`s. They mean different things and need opposite fixes:
+  - **`reading`** — couldn't read the kanji but knew the word. A **kanji** gap.
+  - **`meaning`** — read it fine, didn't know the word. A **vocabulary** gap. This is the one that counts against coverage.
+  - **`grammar`** — knew every word, the line still wouldn't parse. A **grammar** gap.
+- `quiz` — comprehension results. A wrong answer on a line carrying no marks is the interesting case: they *thought* they understood.
+
+**Coverage is the headline number**: `1 − (meaning reveals ÷ content tokens)`. The page shows it live. Below 95% reading has become decoding, which is the level at which people stop reading — and it's the same threshold the story generation targets, so the loop closes.
 
 Act on it:
 
 | Signal | Response |
 |---|---|
+| **Coverage below 95%** | Too hard. Pull vocabulary back toward Guru+ only and drop the Apprentice seeds to one |
+| Many `reading` marks, few `meaning` | They know the words, not the kanji. Keep the vocabulary, but write more of it in kana |
+| Many `meaning` marks | Vocabulary is genuinely ahead of them. Easier words, more repetition |
+| Many `grammar` marks, high coverage | **The floor is too high, not them.** Lower `reference/story-grammar.md` |
 | Same word marked across stories | Reuse it deliberately in the next one. Repetition, not avoidance |
-| Many word marks, few line marks | Vocabulary is too far ahead. Pull it back toward Guru+ only |
-| Many line marks, few word marks | **Grammar floor is too high.** Lower `reference/story-grammar.md` |
 | Clean marks but quiz wrong | Comprehension is the gap, not decoding. Shorter sentences, clearer narrative |
-| Clean marks and quiz right | Raise difficulty — more Apprentice seeds, or one pattern up |
+| Coverage 100% and quiz clean | Raise difficulty — more Apprentice seeds, or one grammar pattern up |
 
 Say in one line what the data changed. If there are no marks yet, say that instead of inventing a rationale.
 

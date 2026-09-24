@@ -80,7 +80,22 @@
   .tok:focus-visible { outline:2px solid var(--mark-edge); outline-offset:1px; }
   .punct { font-family:var(--jp); font-size:1.375rem; }
   .gloss { display:block; font-family:var(--en); font-size:.75rem; color:var(--ink-soft); line-height:1.3; font-style:italic; margin-top:-.15rem; }
-  .gloss .r { font-family:var(--jp); font-style:normal; color:var(--ink-faint); }
+  .tok ruby { ruby-position:over; }
+  .tok rt { font-size:.45em; font-weight:400; color:var(--ink-soft); letter-spacing:.02em; }
+  .tok.lv-reading { background:var(--mark); box-shadow:inset 0 -2px 0 var(--mark-edge); }
+  .tok.lv-meaning { background:var(--mark); box-shadow:inset 0 -2px 0 var(--bad); }
+  .en { font-family:var(--mono); font-size:.5625rem; letter-spacing:.06em; vertical-align:.4em;
+        border:1px solid var(--line); background:var(--surface); color:var(--ink-faint);
+        border-radius:5px; padding:.1rem .25rem; margin-left:.15em; cursor:pointer; }
+  .en:hover { color:var(--ink); border-color:var(--ink-faint); }
+  .en:focus-visible { outline:2px solid var(--gram); outline-offset:1px; }
+  .tally { display:flex; flex-direction:column; gap:.4rem; }
+  .tally .r { display:flex; justify-content:space-between; font-size:.875rem; }
+  .tally .r span:last-child { font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--ink-soft); }
+  .tally .cov { font-size:1rem; font-weight:500; }
+  .tally .cov span:last-child { color:var(--ink); }
+  .tally .verdict { font-size:.8125rem; line-height:1.5; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:.6rem; }
+  .tally .verdict.hard { color:var(--bad); }
 
   section.block { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem; }
   h2 { font-family:var(--mono); font-size:.625rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin:0; font-weight:400; }
@@ -144,12 +159,14 @@
 
   <div id="readview">
     <div class="howto" id="howto">
-      <div><span class="swatch sw-word"></span> <b>Tap a word</b> you didn't know — it highlights and shows its reading.</div>
+      <div><span class="swatch sw-word"></span> <b>Tap a word</b> to show its furigana. Tap it again to clear.</div>
+      <div><b>EN?</b> reveals the English — and counts against your coverage, so try to read it first.</div>
       <div><span class="swatch sw-gram"></span> <b>Tap the bar</b> beside a line whose grammar didn't parse, even if you knew every word.</div>
-      <div style="color:var(--ink-faint)">Words are a vocabulary gap, lines are a grammar gap. They get fixed differently.</div>
+      <div style="color:var(--ink-faint)">Needing the reading is a kanji gap; needing the English is a vocabulary gap; a marked line is a grammar gap. All three get fixed differently.</div>
     </div>
     <div class="story" id="story" style="margin-top:1.25rem"></div>
     <section class="block" id="quiz" style="margin-top:1.25rem"></section>
+    <section class="block" id="tally" style="margin-top:1.25rem"></section>
     <section class="block" id="transblock" style="margin-top:1.25rem">
       <details><summary>Translation — after you've tried</summary><p id="trans"></p></details>
     </section>
@@ -162,7 +179,7 @@
         <option value="new">Newest first</option>
         <option value="old">Oldest first</option>
         <option value="score">Lowest quiz score</option>
-        <option value="marks">Most marked</option>
+        <option value="marks">Lowest coverage</option>
       </select>
     </div>
     <div class="card" id="liblist" style="margin-top:.75rem"></div>
@@ -179,7 +196,7 @@ const LEVEL   = __LEVEL__;
 
 let db = null, sampler = null;
 let stories = [], cur = null, view = "read";
-let marks = new Set(), answered = new Map();
+let marks = new Map(), answered = new Map();   // key -> reading|meaning|grammar
 let stats = {};                // storyId -> {words, gram, right, total}
 let busy = false;
 
@@ -209,7 +226,7 @@ function renderStory() {
     g.setAttribute("aria-label", `Mark line ${li+1} as hard to parse`);
     g.setAttribute("aria-pressed", marks.has(`g:${li}`) ? "true" : "false");
     g.append(document.createElement("span"));
-    g.onclick = () => toggle(`g:${li}`, { type:"grammar", line:li, text:lineText(line) });
+    g.onclick = () => toggleLine(li, lineText(line));
     row.append(g);
 
     const s = document.createElement("div");
@@ -217,19 +234,43 @@ function renderStory() {
 
     line.forEach((tk, ti) => {
       if (tk.p) { const sp=document.createElement("span"); sp.className="punct"; sp.textContent=tk.p; s.append(sp); return; }
-      const key = `w:${li}:${ti}`, on = marks.has(key);
+
+      const key = `w:${li}:${ti}`;
+      const lvl = marks.get(key);
+      const payload = { line:li, text:tk.t, reading:tk.r??"", meaning:tk.m??"" };
+
       const b = document.createElement("button");
-      b.className = "tok"; b.type = "button";
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-      b.setAttribute("aria-label", `${tk.t} — ${tk.m || ""}`);
-      b.textContent = tk.t;
-      b.onclick = () => toggle(key, { type:"word", line:li, text:tk.t, reading:tk.r??"", meaning:tk.m??"" });
+      b.className = "tok" + (lvl ? ` lv-${lvl}` : "");
+      b.type = "button";
+      b.setAttribute("aria-pressed", lvl ? "true" : "false");
+
+      // Furigana only makes sense where there's kanji. A kana word or a
+      // particle has no reading to reveal, so its first tap goes straight
+      // to the meaning — otherwise the tap would appear to do nothing.
+      if (lvl && tk.r) {
+        const ruby = document.createElement("ruby");
+        ruby.append(tk.t);
+        const rt = document.createElement("rt"); rt.textContent = tk.r;
+        ruby.append(rt);
+        b.append(ruby);
+        b.setAttribute("aria-label", `${tk.t}, read ${tk.r}. Tap to clear`);
+      } else {
+        b.textContent = tk.t;
+        b.setAttribute("aria-label", lvl ? `${tk.t}. Tap to clear` : `${tk.t}. Tap to reveal`);
+      }
+
+      b.onclick = () => lvl ? clearMark(key) : reveal(key, tk.r ? "reading" : "meaning", payload);
       s.append(b);
-      if (on) {
+
+      if (lvl === "reading") {
+        const en = document.createElement("button");
+        en.className = "en"; en.type = "button"; en.textContent = "EN?";
+        en.setAttribute("aria-label", `Reveal the English meaning of ${tk.t}`);
+        en.onclick = () => reveal(key, "meaning", payload);
+        s.append(en);
+      } else if (lvl === "meaning") {
         const gl = document.createElement("span");
-        gl.className = "gloss";
-        if (tk.r) { const r=document.createElement("span"); r.className="r"; r.textContent=tk.r; gl.append(r, " · "); }
-        gl.append(tk.m ?? "");
+        gl.className = "gloss"; gl.textContent = tk.m ?? "";
         s.append(gl);
       }
     });
@@ -238,6 +279,7 @@ function renderStory() {
   });
 
   renderQuiz();
+  renderTally();
   renderActions();
 }
 
@@ -270,7 +312,7 @@ function renderQuiz() {
           storyId: cur.id, question: item.ask, chose: item.opts[oi],
           correct: oi === item.a, at: new Date().toISOString()
         });
-        renderQuiz(); renderActions();
+        renderQuiz(); renderTally(); renderActions();
       };
       opts.append(b);
     });
@@ -283,6 +325,51 @@ function renderQuiz() {
     s.textContent = `${right} / ${cur.quiz.length} correct`;
     q.append(s);
   }
+}
+
+function renderTally() {
+  const box = $("tally");
+  box.replaceChildren();
+  if (!cur) { box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+
+  const v = [...marks.values()];
+  const reading = v.filter(x => x === "reading").length;
+  const meaning = v.filter(x => x === "meaning").length;
+  const gram    = v.filter(x => x === "grammar").length;
+  const content = contentCount();
+  const cov = content ? Math.round((1 - meaning / content) * 100) : 100;
+
+  const h = document.createElement("h2"); h.textContent = "This story"; box.append(h);
+  const t = document.createElement("div"); t.className = "tally";
+
+  const row = (label, value, cls) => {
+    const r = document.createElement("div"); r.className = "r" + (cls ? ` ${cls}` : "");
+    const a = document.createElement("span"); a.textContent = label;
+    const b = document.createElement("span"); b.textContent = value;
+    r.append(a, b); t.append(r);
+  };
+
+  row("Known-word coverage", `${cov}%`, "cov");
+  row("Words you needed the English for", `${meaning} of ${content}`);
+  if (reading) row("Readings you needed", String(reading));
+  if (gram) row("Lines that didn't parse", String(gram));
+  if (cur.quiz?.length && answered.size === cur.quiz.length) {
+    const right = [...answered].filter(([qi,oi]) => cur.quiz[qi].a === oi).length;
+    row("Comprehension", `${right} / ${cur.quiz.length}`);
+  }
+
+  // 95% is the extensive-reading floor: below it, reading becomes decoding.
+  const verdict = document.createElement("div");
+  verdict.className = "verdict" + (cov < 95 ? " hard" : "");
+  verdict.textContent =
+    cov < 95  ? "Below 95% — that's decoding, not reading. The next story should be easier; /nihongo-story will see this."
+    : gram > 1 ? "Vocabulary was fine, but the grammar got in the way. That's the floor being too high, not you."
+    : cov < 100 ? "Comfortably in reading range."
+    : "Read clean. Ready for something harder.";
+  t.append(verdict);
+
+  box.append(t);
 }
 
 function renderActions() {
@@ -339,7 +426,10 @@ function renderLibrary() {
       const r = v => v.total ? v.right / v.total : 2;   // unattempted sorts last
       return r(sx) - r(sy);
     }
-    if (mode === "marks") return ((sy.words||0)+(sy.gram||0)) - ((sx.words||0)+(sx.gram||0));
+    if (mode === "marks") {
+      const cov = v => v.content ? (v.meaning||0) / v.content : -1;   // unread sorts last
+      return cov(sy) - cov(sx);
+    }
     return (y.createdAt||"").localeCompare(x.createdAt||"");
   });
 
@@ -356,7 +446,11 @@ function renderLibrary() {
     d.textContent = (s.createdAt || s.date || "").slice(0, 10);
     m.append(d);
 
-    if (st.words) { const w=document.createElement("span"); w.className="w"; w.textContent=`${st.words}w`; m.append(w); }
+    if (st.content) {
+      const c=document.createElement("span"); c.className="w";
+      c.textContent = `${Math.round((1 - (st.meaning||0) / st.content) * 100)}%`;
+      c.title = "known-word coverage"; m.append(c);
+    }
     if (st.gram)  { const g=document.createElement("span"); g.className="g"; g.textContent=`${st.gram}L`; m.append(g); }
     if (st.total) { const q=document.createElement("span"); q.textContent=`${st.right}/${st.total}`; m.append(q); }
 
@@ -379,34 +473,60 @@ function write(coll, id, data) {
   db.doc(`${coll}/${id}`).set(data).catch(e => warn(`Couldn't save: ${e?.message ?? e}`));
 }
 
-function toggle(key, payload) {
-  if (marks.has(key)) {
-    marks.delete(key);
-    if (db) db.doc(`marks/${docId(cur.id, key)}`).delete().catch(()=>{});
-  } else {
-    marks.add(key);
-    write("marks", docId(cur.id, key), { storyId: cur.id, key, ...payload, at:new Date().toISOString() });
-  }
-  bumpStats();
-  renderStory();
+// Three levels, because they mean different things:
+//   reading — couldn't read the kanji        (kanji gap)
+//   meaning — read it, didn't know the word  (vocabulary gap)
+//   grammar — knew every word, line wouldn't parse
+function reveal(key, level, payload) {
+  marks.set(key, level);
+  write("marks", docId(cur.id, key), {
+    storyId: cur.id, key, type: level, level,
+    ...payload, at: new Date().toISOString()
+  });
+  bumpStats(); renderStory();
+}
+
+function clearMark(key) {
+  marks.delete(key);
+  if (db) db.doc(`marks/${docId(cur.id, key)}`).delete()
+    .catch(e => warn(`Couldn't clear mark: ${e?.message ?? e}`));
+  bumpStats(); renderStory();
+}
+
+function toggleLine(li, text) {
+  const key = `g:${li}`;
+  if (marks.has(key)) return clearMark(key);
+  reveal(key, "grammar", { line: li, text });
+}
+
+function contentCount() {
+  return cur ? cur.lines.flat().filter(t => !t.p).length : 0;
 }
 
 function bumpStats() {
-  const s = stats[cur.id] ?? (stats[cur.id] = {});
-  s.words = [...marks].filter(k => k.startsWith("w:")).length;
-  s.gram  = [...marks].filter(k => k.startsWith("g:")).length;
+  const v = [...marks.values()];
+  stats[cur.id] = {
+    ...(stats[cur.id] ?? {}),
+    reading: v.filter(x => x === "reading").length,
+    meaning: v.filter(x => x === "meaning").length,
+    gram:    v.filter(x => x === "grammar").length,
+    content: contentCount(),
+  };
 }
 
 async function open(id) {
   cur = stories.find(s => s.id === id) ?? null;
-  marks = new Set(); answered = new Map();
+  marks = new Map(); answered = new Map();
   if (!cur) return;
   cur.quiz?.forEach(q => delete q._order);
 
   if (db) {
     try {
       const snap = await db.collection("marks").where("storyId","==",id).get();
-      snap.docs.forEach(d => { const k = d.data()?.key; if (k) marks.add(k); });
+      snap.docs.forEach(d => {
+        const v = d.data(); if (!v?.key) return;
+        marks.set(v.key, v.level ?? (v.type === "word" ? "meaning" : v.type));
+      });
     } catch (e) { warn(`Read failed: ${e?.message ?? e}`); }
     try {
       const snap = await db.collection("quiz").where("storyId","==",id).get();
@@ -429,10 +549,14 @@ async function loadAll() {
   } catch (e) { warn(`Couldn't load stories: ${e?.message ?? e}`); }
 
   stats = {};
-  const bump = (id, f) => { (stats[id] ??= {words:0,gram:0,right:0,total:0})[f]++; };
+  const bump = (id, f) => { (stats[id] ??= {reading:0,meaning:0,gram:0,right:0,total:0})[f]++; };
   try {
     const snap = await db.collection("marks").get();
-    snap.docs.forEach(d => { const v=d.data(); if (v?.storyId) bump(v.storyId, v.type==="grammar"?"gram":"words"); });
+    snap.docs.forEach(d => {
+      const v = d.data(); if (!v?.storyId) return;
+      const lvl = v.level ?? (v.type === "word" ? "meaning" : v.type);
+      bump(v.storyId, lvl === "grammar" ? "gram" : lvl);
+    });
   } catch (e) { warn(`Read failed: ${e?.message ?? e}`); }
   try {
     const snap = await db.collection("quiz").get();
@@ -524,7 +648,7 @@ async function generate() {
 }
 
 async function openLocal(story) {
-  cur = story; marks = new Set(); answered = new Map();
+  cur = story; marks = new Map(); answered = new Map();
   renderStory();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -568,6 +692,7 @@ function showEmpty(msg) {
   $("sub").textContent = "";
   $("howto").classList.add("hidden");
   $("quiz").classList.add("hidden");
+  $("tally").classList.add("hidden");
   $("transblock").classList.add("hidden");
   const p = document.createElement("p");
   p.style.cssText = "font-size:.9375rem;line-height:1.6;color:var(--ink-soft);margin:0";

@@ -111,7 +111,17 @@ Set `lessonDailyCap` to `null` to ignore the cap and report the full backlog.
 
 Stories live in a private artifact — a page holding everything you've read, with a **Library** view you can sort by date, lowest quiz score, or most-marked.
 
-Reading a story, you can **tap a word** you didn't know (it highlights and shows its reading) or **tap the bar beside a line** whose grammar didn't parse even though you knew every word. Those mean different things — a vocabulary gap and a grammar gap — and get fixed in opposite directions.
+Reading a story, **tap a word** to show its furigana. If you still don't know it, the **EN?** chip reveals the English — and that's the press that counts against your coverage, so it's worth trying to read first. **Tap the bar beside a line** whose grammar didn't parse even though you knew every word.
+
+Three different problems, tracked separately because they get fixed in opposite directions:
+
+| You needed | That's a | Fix |
+|---|---|---|
+| The reading | kanji gap | same words, more kana |
+| The English | vocabulary gap | easier words, more repetition |
+| The whole line | grammar gap | lower the grammar floor |
+
+**Known-word coverage** updates live as you read: the share of words you didn't need the English for. Below 95% you're decoding rather than reading, which is where people give up — and it's the same threshold story generation aims at, so the number that measures you is the number that steers what comes next.
 
 At the bottom: **Finish & write a new one**. It archives the current story with your marks and score, then writes a fresh one on the spot. No terminal, which is the point when you're reading on a phone.
 
