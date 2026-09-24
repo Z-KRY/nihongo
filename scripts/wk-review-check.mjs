@@ -33,7 +33,13 @@ const DEFAULTS = {
   // Local hours. No notifications inside this window.
   quietFrom: 22,
   quietTo: 7,
+  // Lessons are the restart phase: after a level reset you have a pile of
+  // lessons and zero reviews, because reviews only exist once lessons are
+  // done. Worth its own nudge — but lessons have no SRS clock, so they sit
+  // there indefinitely and a review-rate cooldown would nag all day.
   notifyLessons: true,
+  lessonThreshold: 5,
+  lessonCooldownHours: 12,
 };
 
 const args = new Set(process.argv.slice(2));
@@ -117,6 +123,22 @@ function shouldNotify(count, state, cfg, now) {
   return [false, `cooling down (${(cfg.cooldownHours - elapsedH).toFixed(1)}h left)`];
 }
 
+// Lessons don't grow on their own and have no SRS clock, so the only sensible
+// trigger is a slow heartbeat — no growth rule, much longer cooldown.
+function shouldNotifyLessons(count, state, cfg, now) {
+  if (!cfg.notifyLessons) return [false, "lesson notifications off"];
+  if (count < cfg.lessonThreshold)
+    return [false, `below lesson threshold (${count} < ${cfg.lessonThreshold})`];
+  if (!flag("force") && inQuietHours(now, cfg)) return [false, "quiet hours"];
+  if (!state.lessonsNotifiedAt) return [true, "first lesson nudge"];
+
+  const elapsedH = (now - new Date(state.lessonsNotifiedAt)) / 36e5;
+  if (flag("force") || elapsedH >= cfg.lessonCooldownHours)
+    return [true, `${elapsedH.toFixed(1)}h since last lesson nudge`];
+
+  return [false, `lessons cooling down (${(cfg.lessonCooldownHours - elapsedH).toFixed(1)}h left)`];
+}
+
 function plural(n, word) { return `${n} ${word}${n === 1 ? "" : "s"}`; }
 
 async function main() {
@@ -141,45 +163,55 @@ async function main() {
   const lessons = availableNow(data.lessons, now);
   const nextAt = data.next_reviews_at ? new Date(data.next_reviews_at) : null;
 
+  const save = extra =>
+    writeFileSync(STATE_FILE, JSON.stringify({ ...state, ...extra }, null, 2));
+  const say = msg => { if (!flag("quiet")) console.log(msg); };
+
   if (flag("status")) {
-    const [would, why] = shouldNotify(reviews, state, cfg, now);
+    const [wouldR, whyR] = shouldNotify(reviews, state, cfg, now);
+    const [wouldL, whyL] = shouldNotifyLessons(lessons, state, cfg, now);
     console.log(
       `reviews available : ${reviews}\n` +
       `lessons available : ${lessons}\n` +
       `next reviews at   : ${nextAt ? nextAt.toLocaleString() : "—"}\n` +
-      `last notified     : ${state.lastNotifiedAt ? new Date(state.lastNotifiedAt).toLocaleString() : "never"}\n` +
-      `would notify now  : ${would} (${why})`
+      `last review ping  : ${state.lastNotifiedAt ? new Date(state.lastNotifiedAt).toLocaleString() : "never"}\n` +
+      `last lesson ping  : ${state.lessonsNotifiedAt ? new Date(state.lessonsNotifiedAt).toLocaleString() : "never"}\n` +
+      `would ping reviews: ${wouldR} (${whyR})\n` +
+      `would ping lessons: ${wouldL} (${whyL})`
     );
     return;
   }
 
-  // Backlog cleared — forget the last ping so the next batch notifies fresh
-  // instead of being swallowed by the cooldown.
-  if (reviews === 0) {
-    writeFileSync(STATE_FILE, JSON.stringify({ lastSeenCount: 0 }, null, 2));
-    if (!flag("quiet")) console.log("No reviews available. State reset.");
+  if (reviews > 0) {
+    const [should, why] = shouldNotify(reviews, state, cfg, now);
+    if (!should) {
+      save({ lastSeenCount: reviews });
+      say(`${reviews} reviews waiting — not notifying: ${why}`);
+      return;
+    }
+    const bits = [plural(reviews, "review")];
+    if (cfg.notifyLessons && lessons > 0) bits.push(plural(lessons, "lesson"));
+    await notify("WaniKani", `${bits.join(" · ")} ready`);
+    save({ lastNotifiedAt: now.toISOString(), lastNotifiedCount: reviews, lastSeenCount: reviews });
+    say(`Notified: ${bits.join(" · ")} (${why})`);
     return;
   }
 
-  const [should, why] = shouldNotify(reviews, state, cfg, now);
-  if (!should) {
-    writeFileSync(STATE_FILE, JSON.stringify({ ...state, lastSeenCount: reviews }, null, 2));
-    if (!flag("quiet")) console.log(`${reviews} waiting — not notifying: ${why}`);
+  // No reviews. Clear the review-side state so the next batch pings fresh
+  // rather than being swallowed by a stale cooldown.
+  state.lastNotifiedAt = undefined;
+  state.lastNotifiedCount = undefined;
+
+  const [shouldL, whyL] = shouldNotifyLessons(lessons, state, cfg, now);
+  if (!shouldL) {
+    save({ lastSeenCount: 0 });
+    say(`No reviews. ${lessons} lessons — not notifying: ${whyL}`);
     return;
   }
 
-  const bits = [plural(reviews, "review")];
-  if (cfg.notifyLessons && lessons > 0) bits.push(plural(lessons, "lesson"));
-
-  await notify("WaniKani", `${bits.join(" · ")} ready`);
-
-  writeFileSync(STATE_FILE, JSON.stringify({
-    lastNotifiedAt: now.toISOString(),
-    lastNotifiedCount: reviews,
-    lastSeenCount: reviews,
-  }, null, 2));
-
-  if (!flag("quiet")) console.log(`Notified: ${bits.join(" · ")} (${why})`);
+  await notify("WaniKani", `${plural(lessons, "lesson")} waiting`);
+  save({ lastSeenCount: 0, lessonsNotifiedAt: now.toISOString() });
+  say(`Notified: ${plural(lessons, "lesson")} (${whyL})`);
 }
 
 main().catch(e => { console.error(e.message); process.exit(1); });
