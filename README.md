@@ -65,6 +65,7 @@ A reminder you learn to ignore is worse than none. Defaults:
 - **New reviews ping straight away.** WaniKani releases them on the hour, so the count is stable in between and this can't produce a flurry.
 - **A backlog you're ignoring** gets nudged every 2 hours, not continuously.
 - **Silent 22:00–07:00.**
+- **Lessons get one nudge a day**, at the first check after 09:00 — they have no SRS clock and the daily allowance is always full against a backlog, so a review-style rule would nag about a number that never changes. Set `lessonNudgeHour` to move it.
 - **Clearing your reviews resets it**, so the next batch pings fresh instead of being swallowed by a cooldown.
 
 Override any of it in `~/.config/nihongo/config.json`:
@@ -72,7 +73,7 @@ Override any of it in `~/.config/nihongo/config.json`:
 ```json
 { "threshold": 5, "growth": 10, "cooldownHours": 3,
   "quietFrom": 22, "quietTo": 7,
-  "lessonThreshold": 5, "lessonCooldownHours": 12, "lessonDailyCap": 20 }
+  "lessonThreshold": 1, "lessonNudgeHour": 9, "lessonDailyCap": 20 }
 ```
 
 ### The lesson count, and why it may not match your dashboard

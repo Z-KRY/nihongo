@@ -41,8 +41,11 @@ const DEFAULTS = {
   // done. Worth its own nudge — but lessons have no SRS clock, so they sit
   // there indefinitely and a review-rate cooldown would nag all day.
   notifyLessons: true,
-  lessonThreshold: 5,
-  lessonCooldownHours: 12,
+  lessonThreshold: 1,
+  // Once per calendar day, not a rolling cooldown — a rolling window drifts
+  // to a different time each day, and the thing being built here is a habit.
+  // Sent at the first check at or after this local hour.
+  lessonNudgeHour: 9,
   // WaniKani's "Maximum Recommended Daily Lessons" (App Settings, 0-100).
   // The v2 API reports the entire unlocked lesson backlog and does NOT expose
   // this setting, so the dashboard can say 20 while the API says 81. Set it
@@ -171,20 +174,25 @@ function shouldNotify(count, state, cfg, now) {
   return [false, `cooling down (${(cfg.cooldownHours - elapsedH).toFixed(1)}h left)`];
 }
 
-// Lessons don't grow on their own and have no SRS clock, so the only sensible
-// trigger is a slow heartbeat — no growth rule, much longer cooldown.
+const localDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+// Lessons have no SRS clock and, against a backlog, the daily allowance is
+// always full — so a review-style trigger would nag about a number that never
+// changes. One nudge per calendar day at a fixed hour instead.
 function shouldNotifyLessons(count, state, cfg, now) {
   if (!cfg.notifyLessons) return [false, "lesson notifications off"];
   if (count < cfg.lessonThreshold)
     return [false, `below lesson threshold (${count} < ${cfg.lessonThreshold})`];
-  if (!flag("force") && inQuietHours(now, cfg)) return [false, "quiet hours"];
-  if (!state.lessonsNotifiedAt) return [true, "first lesson nudge"];
+  if (flag("force")) return [true, "forced"];
+  if (inQuietHours(now, cfg)) return [false, "quiet hours"];
 
-  const elapsedH = (now - new Date(state.lessonsNotifiedAt)) / 36e5;
-  if (flag("force") || elapsedH >= cfg.lessonCooldownHours)
-    return [true, `${elapsedH.toFixed(1)}h since last lesson nudge`];
+  const today = localDate(now);
+  if (state.lessonsNotifiedDate === today)
+    return [false, `already nudged today (${today})`];
+  if (now.getHours() < cfg.lessonNudgeHour)
+    return [false, `before ${cfg.lessonNudgeHour}:00`];
 
-  return [false, `lessons cooling down (${(cfg.lessonCooldownHours - elapsedH).toFixed(1)}h left)`];
+  return [true, `daily nudge for ${today}`];
 }
 
 function plural(n, word) { return `${n} ${word}${n === 1 ? "" : "s"}`; }
@@ -237,7 +245,7 @@ async function main() {
       `lessons available : ${lessons}${capNote}\n` +
       `next reviews at   : ${nextAt ? nextAt.toLocaleString() : "—"}\n` +
       `last review ping  : ${state.lastNotifiedAt ? new Date(state.lastNotifiedAt).toLocaleString() : "never"}\n` +
-      `last lesson ping  : ${state.lessonsNotifiedAt ? new Date(state.lessonsNotifiedAt).toLocaleString() : "never"}\n` +
+      `last lesson ping  : ${state.lessonsNotifiedDate ?? "never"}\n` +
       `would ping reviews: ${wouldR} (${whyR})\n` +
       `would ping lessons: ${wouldL} (${whyL})`
     );
@@ -272,7 +280,7 @@ async function main() {
   }
 
   await notify("WaniKani", `${plural(lessons, "lesson")} waiting`);
-  save({ lastSeenCount: 0, lessonsNotifiedAt: now.toISOString() });
+  save({ lastSeenCount: 0, lessonsNotifiedDate: localDate(now) });
   say(`Notified: ${plural(lessons, "lesson")} (${whyL})`);
 }
 
