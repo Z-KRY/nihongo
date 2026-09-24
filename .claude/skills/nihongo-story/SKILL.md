@@ -1,60 +1,72 @@
 ---
 name: nihongo-story
-description: Write a short Japanese story built from the vocabulary and kanji the learner has actually unlocked in WaniKani, as graded reading practice. Use when the user says "nihongo story", "make me a story", "give me something to read", "reading practice", "write a story in Japanese", or asks for Japanese text at their level.
+description: Write a short Japanese story from the vocabulary and kanji the learner has unlocked in WaniKani, add it to their reader artifact, and adapt it to what they struggled with last time. Use when the user says "nihongo story", "make me a story", "give me something to read", "reading practice", or asks for Japanese text at their level.
 ---
 
 # Story
 
-A graded reader built from this learner's own WaniKani progress.
+Graded readers built from this learner's own WaniKani progress, published into a reader artifact that collects what they struggled with.
 
-## Inputs
+**Reader artifact:** https://claude.ai/artifact/25yb1haX5dCH7LNQzxvSzW
+**Source:** `me/reader.html` — republish that same path to keep the URL. The learner bookmarks it; never publish a story to a new URL.
 
-- `me/vocabulary.md` — WaniKani items and SRS stages. **If missing or stale, run `scripts/wanikani-pull.mjs` first.** Without it there is nothing to grade against and the skill can't do its job.
-- `reference/story-grammar.md` — the sentence patterns allowed. This is a hard ceiling, not a suggestion.
-- `me/stories/` — what's already been written, so vocabulary gets recycled deliberately rather than by accident.
+## First, read what went wrong last time
 
-## The constraint that matters
+Before writing anything, read the artifact's database with `ArtifactData`:
 
-**Aim for 98% known words.** That's the extensive-reading threshold: below about 95%, reading stops being reading and becomes decoding with a dictionary, and people quit. For a story of 60–100 words that means **at most one or two unfamiliar items**, and they should be inferable from context.
+- `marks` — every word or line they flagged. `type: "word"` is a **vocabulary** gap; `type: "grammar"` is a **grammar** gap. They need opposite fixes, which is the entire reason the page distinguishes them.
+- `quiz` — comprehension results. A wrong answer on a question whose sentence carries no marks is the interesting case: they *thought* they understood.
 
-More known vocabulary than feels interesting to write with is the correct amount.
+Act on it:
 
-## Kanji
+| Signal | Response |
+|---|---|
+| Same word marked across stories | Reuse it deliberately in the next one. Repetition, not avoidance |
+| Many word marks, few line marks | Vocabulary is too far ahead. Pull it back toward Guru+ only |
+| Many line marks, few word marks | **Grammar floor is too high.** Lower `reference/story-grammar.md` |
+| Clean marks but quiz wrong | Comprehension is the gap, not decoding. Shorter sentences, clearer narrative |
+| Clean marks and quiz right | Raise difficulty — more Apprentice seeds, or one pattern up |
 
-- **Guru or above (SRS stage ≥ 5): write bare.** This is the payoff — reading their own kanji in running text, which WaniKani itself never gives them.
-- **Apprentice: write bare with furigana in brackets** — 学校[がっこう]. They're mid-drill on it; seeing it supported is reinforcement.
-- **Not yet unlocked: kana only.** Never introduce a kanji WaniKani hasn't reached. It undercuts the curriculum and teaches the wrong reading order.
+Say in one line what the data changed. If there are no marks yet, say that instead of inventing a rationale.
 
-## Make it reinforce, not test
+## Then write it
 
-The story is not an exam. Build it mostly from **solid (Guru+)** vocabulary, then deliberately seed **two or three Apprentice items** — the ones WaniKani is drilling right now.
+Inputs: `me/vocabulary.md` (run `scripts/wanikani-pull.mjs` if missing or stale) and `reference/story-grammar.md` (a hard ceiling, not a suggestion).
 
-That's the whole value. WaniKani teaches words in isolation; meeting one in a sentence, doing a job, is what turns a flashcard answer into a word you know. Choose the seeds from items at Apprentice 3–4, which are closest to promotion and benefit most.
+**Aim for 98% known words.** The extensive-reading threshold — below about 95% reading becomes decoding with a dictionary and people quit. In 60–100 words that's **one or two** unfamiliar items, inferable from context.
 
-## Craft
+**Kanji follows WaniKani exactly:**
+- Guru+ (stage ≥ 5) — bare. This is the payoff: their own kanji in running text.
+- Apprentice — bare, but the token's gloss carries the reading.
+- Not unlocked — kana only. Never run ahead of the curriculum.
 
-- **Repetition is good pedagogy.** Using the same word four times in sixty words would be bad prose and is excellent graded reading. Do it on purpose.
-- **Short sentences.** One idea each. Long sentences fail on grammar the reader doesn't have, not on vocabulary.
-- **Give it a turn.** 田中さんは学校に行きます。田中さんは本を読みます。 is technically a story and nobody has ever wanted to read one. A small joke, a cat doing something unreasonable, a tiny twist at the end — at sixty words you can still land something. If the learner wouldn't mention it to anyone, write a different one.
-- **Concrete over abstract.** Their vocabulary is nouns and everyday verbs. Lean into it.
-- **Title it in Japanese**, within the same constraints.
+**Seed two or three Apprentice items** (stages 3–4, closest to promotion). WaniKani teaches words in isolation; meeting one doing a job in a sentence is what promotes it from flashcard answer to known word.
 
-## Order of presentation
+**Craft:** repetition is good pedagogy, not weak prose — reuse words on purpose. Short sentences; long ones fail on grammar, not vocabulary. And give it a turn — a joke, a cat behaving unreasonably, a twist. If they wouldn't mention it to anyone, write a different one.
 
-Strict, and it matters:
+## Add it to the reader
 
-1. **The story.** Nothing else. No glossary above it, no translation alongside.
-2. **Glossary** — only the two or three items that are new or seeded, with readings.
-3. **Translation** — last, and say plainly that it's there for checking *after* an attempt.
+Prepend a new object to the `STORIES` array in `me/reader.html` (newest first) and republish that path.
 
-If the translation sits next to the story they will read the translation. This isn't a trust problem, it's how eyes work.
+Each entry needs:
 
-## Save it
+```js
+{
+  id: "YYYY-MM-DD-slug",        // stable — db rows key off it
+  title: "…", date: "…", note: "…",
+  lines: [ [ {t:"word", r:"reading", m:"meaning"}, {t:"は", m:"particle — topic"}, {p:"。"} ], … ],
+  quiz: [ { ask:"…", opts:[…], a:0 } ],   // a = index of the correct option
+  translation: "…"
+}
+```
 
-Write to `me/stories/YYYY-MM-DD-<short-slug>.md` with the same structure. Note at the bottom which Apprentice items were seeded and what the approximate known-word percentage was.
+- **Tokenise by meaningful unit**, matching how WaniKani teaches it — `ベッドの下` is one item, not three.
+- **Every token needs `m`**, particles included. A particle gloss is often exactly what an unparseable line needs.
+- `{p:"。"}` for punctuation — non-interactive.
+- **Quiz tests comprehension, not vocabulary.** Ask about what happened, in English, 3–4 multiple choice. Correct answer at index `a`; the page shuffles display order.
 
-**Re-reading old stories is worth more than reading new ones**, because fluency comes from meeting known words at speed, not from meeting new ones. Say so once, when there are three or four in the folder — not every time.
+Also save a plain copy to `me/stories/YYYY-MM-DD-slug.md` — readable without opening the artifact, and a record if the page is ever rebuilt.
 
 ## Response format
 
-Post the story in chat as well as saving it. No preamble about what you're about to do, no summary afterwards. The story, the glossary, the translation, done.
+Post the story in chat as well, then the link. No preamble, no summary. Don't paste the translation into chat — the page keeps it behind a disclosure for a reason, and putting it in the transcript defeats that.
