@@ -51,26 +51,40 @@ Inputs: `me/vocabulary.md` (run `scripts/wanikani-pull.mjs` if missing or stale)
 
 ## Add it to the reader
 
-Prepend a new object to the `STORIES` array in `me/reader.html` (newest first) and republish that path.
+Stories live in the artifact's **database**, not in the page HTML. Write one document to the `stories` collection with `ArtifactData`:
 
-Each entry needs:
-
-```js
-{
-  id: "YYYY-MM-DD-slug",        // stable — db rows key off it
-  title: "…", date: "…", note: "…",
-  lines: [ [ {t:"word", r:"reading", m:"meaning"}, {t:"は", m:"particle — topic"}, {p:"。"} ], … ],
-  quiz: [ { ask:"…", opts:[…], a:0 } ],   // a = index of the correct option
-  translation: "…"
-}
+```json
+{ "id": "YYYY-MM-DD-slug", "title": "…", "date": "YYYY-MM-DD",
+  "createdAt": "<ISO>", "note": "one short English line",
+  "lines": [[{"t":"word","r":"reading","m":"meaning"},{"t":"は","m":"particle — topic"},{"p":"。"}]],
+  "quiz": [{"ask":"…","opts":["…"],"a":0}],
+  "translation": "…", "status": "active", "source": "claude-code" }
 ```
+
+Build it in a local JSON file and pass `file_path` — the tokenised lines are long and don't belong inline.
 
 - **Tokenise by meaningful unit**, matching how WaniKani teaches it — `ベッドの下` is one item, not three.
 - **Every token needs `m`**, particles included. A particle gloss is often exactly what an unparseable line needs.
-- `{p:"。"}` for punctuation — non-interactive.
-- **Quiz tests comprehension, not vocabulary.** Ask about what happened, in English, 3–4 multiple choice. Correct answer at index `a`; the page shuffles display order.
+- `r` only where the token contains kanji. `{"p":"。"}` for punctuation.
+- **Quiz tests comprehension, not vocabulary** — what happened, in English, 3–4 options, `a` is the correct index. The page shuffles display order.
 
-Also save a plain copy to `me/stories/YYYY-MM-DD-slug.md` — readable without opening the artifact, and a record if the page is ever rebuilt.
+Nothing needs republishing to add a story. Only rebuild and republish the page when the **vocabulary** changes:
+
+```bash
+node scripts/wanikani-pull.mjs && node scripts/build-reader.mjs
+```
+
+then publish `me/reader.html` to the URL in `me/reader-url.txt`. That's what injects the current Guru+ vocabulary and grammar floor into the page, which the page needs because it generates stories too.
+
+Also save a plain copy to `me/stories/YYYY-MM-DD-slug.md` — readable without opening the artifact.
+
+## The page writes its own stories
+
+The reader has `sample`, so **Finish & write a new one** generates without a Claude Code session. Those arrive with `source: "in-page"`.
+
+They're constrained by the same vocabulary and grammar floor, but they get no adaptation — the page can't read the marks and reason about them, lower the grammar floor, or notice that three stories running have the same weakness. Treat in-page stories as keeping the habit alive between sessions, and this skill as the one that actually moves the level.
+
+When reviewing marks, check `source`. A run of in-page stories with rising mark counts usually means the floor needs lowering and nothing has been there to do it.
 
 ## Response format
 

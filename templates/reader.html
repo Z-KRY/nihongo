@@ -9,256 +9,193 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
 <style>
   :root {
-    --paper:     #FBFCFA;
-    --surface:   #FFFFFF;
-    --surface-2: #F0F3EF;
-    --ink:       #19201B;
-    --ink-soft:  #5B665E;
-    --ink-faint: #8B958E;
-    --line:      #E2E8E2;
-    --rule:      #D3DBD3;
-    --mark:      #FBEBBE;
-    --mark-edge: #D9A93A;
-    --gram:      #6B8CC7;
-    --gram-bg:   #E8EEF8;
-    --good:      #38705A;
-    --good-bg:   #E5EFE9;
-    --bad:       #A64F35;
-    --bad-bg:    #F7EAE5;
-    --shadow:    0 1px 2px rgba(25,32,27,.05), 0 10px 30px -18px rgba(25,32,27,.3);
-
-    --jp:   "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
-    --en:   "Newsreader", Georgia, serif;
-    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    --paper:#FBFCFA; --surface:#FFFFFF; --surface-2:#F0F3EF;
+    --ink:#19201B; --ink-soft:#5B665E; --ink-faint:#8B958E;
+    --line:#E2E8E2; --rule:#D3DBD3;
+    --mark:#FBEBBE; --mark-edge:#D9A93A;
+    --gram:#6B8CC7; --gram-bg:#E8EEF8;
+    --good:#38705A; --good-bg:#E5EFE9;
+    --bad:#A64F35; --bad-bg:#F7EAE5;
+    --shadow:0 1px 2px rgba(25,32,27,.05), 0 10px 30px -18px rgba(25,32,27,.3);
+    --jp:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    --en:"Newsreader",Georgia,serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
   }
-
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --paper:     #14170F;
-      --surface:   #1C211A;
-      --surface-2: #262C24;
-      --ink:       #E9EDE6;
-      --ink-soft:  #9DA79C;
-      --ink-faint: #6E786D;
-      --line:      #2E352C;
-      --rule:      #3A422F;
-      --mark:      #4A3C14;
-      --mark-edge: #C79B30;
-      --gram:      #91AEE2;
-      --gram-bg:   #1E2736;
-      --good:      #6EAD8E;
-      --good-bg:   #17251E;
-      --bad:       #D4836A;
-      --bad-bg:    #2A1C17;
-      --shadow:    0 1px 2px rgba(0,0,0,.35), 0 10px 30px -18px rgba(0,0,0,.6);
+      --paper:#14170F; --surface:#1C211A; --surface-2:#262C24;
+      --ink:#E9EDE6; --ink-soft:#9DA79C; --ink-faint:#6E786D;
+      --line:#2E352C; --rule:#3A422F;
+      --mark:#4A3C14; --mark-edge:#C79B30;
+      --gram:#91AEE2; --gram-bg:#1E2736;
+      --good:#6EAD8E; --good-bg:#17251E;
+      --bad:#D4836A; --bad-bg:#2A1C17;
+      --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 30px -18px rgba(0,0,0,.6);
     }
   }
   :root[data-theme="dark"] {
-    --paper:     #14170F;
-    --surface:   #1C211A;
-    --surface-2: #262C24;
-    --ink:       #E9EDE6;
-    --ink-soft:  #9DA79C;
-    --ink-faint: #6E786D;
-    --line:      #2E352C;
-    --rule:      #3A422F;
-    --mark:      #4A3C14;
-    --mark-edge: #C79B30;
-    --gram:      #91AEE2;
-    --gram-bg:   #1E2736;
-    --good:      #6EAD8E;
-    --good-bg:   #17251E;
-    --bad:       #D4836A;
-    --bad-bg:    #2A1C17;
-    --shadow:    0 1px 2px rgba(0,0,0,.35), 0 10px 30px -18px rgba(0,0,0,.6);
+    --paper:#14170F; --surface:#1C211A; --surface-2:#262C24;
+    --ink:#E9EDE6; --ink-soft:#9DA79C; --ink-faint:#6E786D;
+    --line:#2E352C; --rule:#3A422F;
+    --mark:#4A3C14; --mark-edge:#C79B30;
+    --gram:#91AEE2; --gram-bg:#1E2736;
+    --good:#6EAD8E; --good-bg:#17251E;
+    --bad:#D4836A; --bad-bg:#2A1C17;
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 30px -18px rgba(0,0,0,.6);
   }
 
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--en);
-    -webkit-font-smoothing: antialiased;
-  }
-  .wrap {
-    max-width: 36rem;
-    margin: 0 auto;
-    padding: 1.75rem 1rem 5rem;
-    display: flex; flex-direction: column; gap: 1.5rem;
-  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--en); -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:36rem; margin:0 auto; padding:1.75rem 1rem 5rem; display:flex; flex-direction:column; gap:1.25rem; }
 
-  header { display: flex; flex-direction: column; gap: .3rem; }
-  .kicker {
-    font-family: var(--mono); font-size: .625rem; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--ink-faint);
-  }
-  h1 { font-family: var(--jp); font-size: 1.5rem; font-weight: 700; margin: 0; line-height: 1.3; }
-  .sub { font-size: .875rem; font-style: italic; color: var(--ink-soft); margin: 0; }
+  header { display:flex; flex-direction:column; gap:.3rem; }
+  .kicker { font-family:var(--mono); font-size:.625rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); }
+  h1 { font-family:var(--jp); font-size:1.5rem; font-weight:700; margin:0; line-height:1.3; text-wrap:balance; }
+  .sub { font-size:.875rem; font-style:italic; color:var(--ink-soft); margin:0; }
 
-  select {
-    font: inherit; font-size: .8125rem; padding: .5rem .625rem;
-    border: 1px solid var(--line); border-radius: 9px;
-    background: var(--surface); color: var(--ink); width: 100%;
-  }
-  select:focus-visible { outline: 2px solid var(--gram); outline-offset: 1px; }
+  .seg { display:flex; background:var(--surface-2); border-radius:10px; padding:3px; gap:2px; }
+  .seg button { flex:1; font:inherit; font-size:.8125rem; font-weight:500; padding:.5rem; border:0; border-radius:8px; background:transparent; color:var(--ink-soft); cursor:pointer; }
+  .seg button[aria-pressed="true"] { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(25,32,27,.08); }
+  .seg button:focus-visible { outline:2px solid var(--gram); outline-offset:1px; }
 
-  .howto {
-    background: var(--surface-2); border-radius: 11px; padding: .75rem .875rem;
-    font-size: .8125rem; line-height: 1.55; color: var(--ink-soft);
-    display: flex; flex-direction: column; gap: .3rem;
-  }
-  .howto b { color: var(--ink); font-weight: 500; }
-  .swatch {
-    display: inline-block; width: .7em; height: .7em; border-radius: 2px;
-    vertical-align: baseline; margin-right: .15em;
-  }
-  .sw-word { background: var(--mark); border: 1px solid var(--mark-edge); }
-  .sw-gram { background: var(--gram); }
+  .howto { background:var(--surface-2); border-radius:11px; padding:.75rem .875rem; font-size:.8125rem; line-height:1.55; color:var(--ink-soft); display:flex; flex-direction:column; gap:.3rem; }
+  .howto b { color:var(--ink); font-weight:500; }
+  .swatch { display:inline-block; width:.7em; height:.7em; border-radius:2px; vertical-align:baseline; margin-right:.15em; }
+  .sw-word { background:var(--mark); border:1px solid var(--mark-edge); }
+  .sw-gram { background:var(--gram); }
 
-  /* ---- story ---- */
-  .story {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-    box-shadow: var(--shadow); padding: 1.5rem 1.25rem;
-    display: flex; flex-direction: column; gap: .35rem;
-  }
-  .line { display: flex; gap: .5rem; align-items: flex-start; }
-  .gutter {
-    flex: 0 0 auto; width: 1.5rem; margin-top: .55rem;
-    border: 0; background: transparent; cursor: pointer; padding: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .gutter span {
-    display: block; width: 3px; height: 1.25rem; border-radius: 2px;
-    background: var(--rule); transition: background .15s, height .15s;
-  }
-  .gutter[aria-pressed="true"] span { background: var(--gram); height: 1.6rem; }
-  .gutter:focus-visible { outline: 2px solid var(--gram); outline-offset: 2px; border-radius: 4px; }
+  .card, .story { background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); }
+  .story { padding:1.5rem 1.25rem; display:flex; flex-direction:column; gap:.35rem; }
+  .line { display:flex; gap:.5rem; align-items:flex-start; }
+  .gutter { flex:0 0 auto; width:1.5rem; margin-top:.55rem; border:0; background:transparent; cursor:pointer; padding:0; display:flex; align-items:center; justify-content:center; }
+  .gutter span { display:block; width:3px; height:1.25rem; border-radius:2px; background:var(--rule); transition:background .15s,height .15s; }
+  .gutter[aria-pressed="true"] span { background:var(--gram); height:1.6rem; }
+  .gutter:focus-visible { outline:2px solid var(--gram); outline-offset:2px; border-radius:4px; }
 
-  .sent { font-family: var(--jp); font-size: 1.375rem; line-height: 2.1; flex: 1; }
-  .sent.grammar-marked { background: var(--gram-bg); border-radius: 6px; }
+  .sent { font-family:var(--jp); font-size:1.375rem; line-height:2.1; flex:1; }
+  .sent.grammar-marked { background:var(--gram-bg); border-radius:6px; }
+  .tok { border:0; background:transparent; padding:0 .04em; margin:0; font:inherit; color:inherit; cursor:pointer; border-radius:3px; transition:background .12s; -webkit-tap-highlight-color:transparent; }
+  .tok:hover { background:var(--surface-2); }
+  .tok[aria-pressed="true"] { background:var(--mark); box-shadow:inset 0 -2px 0 var(--mark-edge); }
+  .tok:focus-visible { outline:2px solid var(--mark-edge); outline-offset:1px; }
+  .punct { font-family:var(--jp); font-size:1.375rem; }
+  .gloss { display:block; font-family:var(--en); font-size:.75rem; color:var(--ink-soft); line-height:1.3; font-style:italic; margin-top:-.15rem; }
+  .gloss .r { font-family:var(--jp); font-style:normal; color:var(--ink-faint); }
 
-  .tok {
-    border: 0; background: transparent; padding: 0 .04em; margin: 0;
-    font: inherit; color: inherit; cursor: pointer; border-radius: 3px;
-    position: relative; transition: background .12s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .tok:hover { background: var(--surface-2); }
-  .tok[aria-pressed="true"] {
-    background: var(--mark);
-    box-shadow: inset 0 -2px 0 var(--mark-edge);
-  }
-  .tok:focus-visible { outline: 2px solid var(--mark-edge); outline-offset: 1px; }
-  .punct { font-family: var(--jp); font-size: 1.375rem; }
+  section.block { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem; }
+  h2 { font-family:var(--mono); font-size:.625rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin:0; font-weight:400; }
+  .q { display:flex; flex-direction:column; gap:.5rem; }
+  .q .ask { font-size:1rem; margin:0; }
+  .opts { display:flex; flex-direction:column; gap:.375rem; }
+  .opt { font:inherit; font-size:.9375rem; text-align:left; cursor:pointer; padding:.625rem .75rem; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink); transition:background .12s,border-color .12s; }
+  .opt:hover:not(:disabled) { background:var(--surface-2); }
+  .opt:disabled { cursor:default; opacity:.55; }
+  .opt.right { background:var(--good-bg); border-color:var(--good); color:var(--good); opacity:1; }
+  .opt.wrong { background:var(--bad-bg); border-color:var(--bad); color:var(--bad); opacity:1; }
+  .opt:focus-visible { outline:2px solid var(--gram); outline-offset:1px; }
+  .score { font-family:var(--mono); font-size:.8125rem; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
 
-  .gloss {
-    display: block; font-family: var(--en); font-size: .75rem;
-    color: var(--ink-soft); line-height: 1.3; font-style: italic;
-    margin-top: -.15rem;
-  }
-  .gloss .r { font-family: var(--jp); font-style: normal; color: var(--ink-faint); }
+  details { border-top:1px solid var(--line); padding-top:.875rem; }
+  summary { cursor:pointer; font-family:var(--mono); font-size:.625rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); }
+  summary:focus-visible { outline:2px solid var(--gram); outline-offset:2px; }
+  details p { font-size:.9375rem; line-height:1.6; color:var(--ink-soft); }
 
-  /* ---- quiz ---- */
-  section.block {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-    padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;
-  }
-  h2 {
-    font-family: var(--mono); font-size: .625rem; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--ink-faint); margin: 0; font-weight: 400;
-  }
-  .q { display: flex; flex-direction: column; gap: .5rem; }
-  .q .ask { font-size: 1rem; margin: 0; }
-  .opts { display: flex; flex-direction: column; gap: .375rem; }
-  .opt {
-    font: inherit; font-size: .9375rem; text-align: left; cursor: pointer;
-    padding: .625rem .75rem; border-radius: 9px;
-    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
-    transition: background .12s, border-color .12s;
-  }
-  .opt:hover:not(:disabled) { background: var(--surface-2); }
-  .opt:disabled { cursor: default; opacity: .55; }
-  .opt.right { background: var(--good-bg); border-color: var(--good); color: var(--good); opacity: 1; }
-  .opt.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); opacity: 1; }
-  .opt:focus-visible { outline: 2px solid var(--gram); outline-offset: 1px; }
+  .actions { display:flex; flex-direction:column; gap:.5rem; }
+  .btn { font:inherit; font-size:.9375rem; font-weight:500; padding:.875rem; border-radius:11px; cursor:pointer; border:1px solid var(--line); background:var(--surface); color:var(--ink); transition:background .12s; }
+  .btn:hover:not(:disabled) { background:var(--surface-2); }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .btn.primary { background:var(--good-bg); border-color:var(--good); color:var(--good); }
+  .btn:focus-visible { outline:2px solid var(--gram); outline-offset:2px; }
+  .hint { font-size:.75rem; color:var(--ink-faint); text-align:center; line-height:1.5; }
 
-  .score {
-    font-family: var(--mono); font-size: .8125rem; color: var(--ink-soft);
-    font-variant-numeric: tabular-nums;
-  }
+  /* library */
+  .libhead { display:flex; gap:.5rem; align-items:center; }
+  .libhead select { flex:1; font:inherit; font-size:.8125rem; padding:.5rem .625rem; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--ink); }
+  .row { display:flex; gap:.75rem; align-items:baseline; width:100%; text-align:left; padding:.875rem 1rem; border:0; border-bottom:1px solid var(--line); background:transparent; color:inherit; font:inherit; cursor:pointer; }
+  .row:last-child { border-bottom:0; }
+  .row:hover { background:var(--surface-2); }
+  .row:focus-visible { outline:2px solid var(--gram); outline-offset:-2px; }
+  .row .t { font-family:var(--jp); font-size:1rem; font-weight:500; flex:1; }
+  .row .meta { font-family:var(--mono); font-size:.6875rem; color:var(--ink-faint); font-variant-numeric:tabular-nums; display:flex; gap:.5rem; flex:0 0 auto; }
+  .row .meta .w { color:var(--mark-edge); }
+  .row .meta .g { color:var(--gram); }
+  .row.current .t::after { content:"reading"; font-family:var(--mono); font-size:.5625rem; letter-spacing:.1em; text-transform:uppercase; color:var(--good); margin-left:.5em; }
+  .empty { padding:1.5rem 1rem; font-size:.9375rem; color:var(--ink-soft); line-height:1.6; }
 
-  details { border-top: 1px solid var(--line); padding-top: .875rem; }
-  summary {
-    cursor: pointer; font-family: var(--mono); font-size: .625rem;
-    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint);
-  }
-  summary:focus-visible { outline: 2px solid var(--gram); outline-offset: 2px; }
-  details p { font-size: .9375rem; line-height: 1.6; color: var(--ink-soft); }
-
-  footer {
-    font-family: var(--mono); font-size: .625rem; letter-spacing: .05em;
-    color: var(--ink-faint); text-align: center; line-height: 1.8;
-  }
-  .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: .35em; vertical-align: middle; }
-  .on { background: var(--good); } .off { background: var(--ink-faint); }
-
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  footer { font-family:var(--mono); font-size:.625rem; letter-spacing:.05em; color:var(--ink-faint); text-align:center; line-height:1.8; }
+  .dot { display:inline-block; width:5px; height:5px; border-radius:50%; margin-right:.35em; vertical-align:middle; }
+  .on { background:var(--good); } .off { background:var(--ink-faint); }
+  .hidden { display:none !important; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <span class="kicker">多読 · extensive reading</span>
+    <span class="kicker">多読 · level <span id="lvl"></span></span>
     <h1 id="title">…</h1>
     <p class="sub" id="sub"></p>
   </header>
 
-  <select id="picker" aria-label="Choose a story"></select>
-
-  <div class="howto">
-    <div><span class="swatch sw-word"></span> <b>Tap a word</b> you didn't know — it highlights and shows its reading.</div>
-    <div><span class="swatch sw-gram"></span> <b>Tap the bar</b> beside a line whose grammar didn't parse, even if you knew every word.</div>
-    <div style="color:var(--ink-faint)">The two mean different things: words are a vocabulary gap, lines are a grammar gap. They get fixed differently.</div>
+  <div class="seg" role="group" aria-label="View">
+    <button id="v-read" aria-pressed="true">Read</button>
+    <button id="v-lib" aria-pressed="false">Library</button>
   </div>
 
-  <div class="story" id="story"></div>
+  <div id="readview">
+    <div class="howto" id="howto">
+      <div><span class="swatch sw-word"></span> <b>Tap a word</b> you didn't know — it highlights and shows its reading.</div>
+      <div><span class="swatch sw-gram"></span> <b>Tap the bar</b> beside a line whose grammar didn't parse, even if you knew every word.</div>
+      <div style="color:var(--ink-faint)">Words are a vocabulary gap, lines are a grammar gap. They get fixed differently.</div>
+    </div>
+    <div class="story" id="story" style="margin-top:1.25rem"></div>
+    <section class="block" id="quiz" style="margin-top:1.25rem"></section>
+    <section class="block" id="transblock" style="margin-top:1.25rem">
+      <details><summary>Translation — after you've tried</summary><p id="trans"></p></details>
+    </section>
+    <div class="actions" id="actions" style="margin-top:1.25rem"></div>
+  </div>
 
-  <section class="block" id="quiz"></section>
+  <div id="libview" class="hidden">
+    <div class="libhead">
+      <select id="sort" aria-label="Sort stories">
+        <option value="new">Newest first</option>
+        <option value="old">Oldest first</option>
+        <option value="score">Lowest quiz score</option>
+        <option value="marks">Most marked</option>
+      </select>
+    </div>
+    <div class="card" id="liblist" style="margin-top:.75rem"></div>
+  </div>
 
-  <section class="block">
-    <details>
-      <summary>Translation — after you've tried</summary>
-      <p id="trans"></p>
-    </details>
-  </section>
-
-  <footer>
-    <span id="syncdot" class="dot off"></span><span id="sync">marks saved on this device only</span>
-  </footer>
+  <footer><span id="syncdot" class="dot off"></span><span id="sync">connecting…</span></footer>
 </div>
 
 <script>
-const STORIES = [
-  // Stories land here, newest first. Run /nihongo-story to add one.
-];
+const VOCAB   = __VOCAB__;     // [{w,r,m}] — Guru+ only
+const KANJI   = __KANJI__;     // [string]  — Guru+ only
+const GRAMMAR = __GRAMMAR__;   // the grammar floor, verbatim
+const LEVEL   = __LEVEL__;
 
-let db = null;
-let cur = STORIES[0];
-const marks = new Set();   // "w:<line>:<tok>" | "g:<line>"
-const answered = new Map();
+let db = null, sampler = null;
+let stories = [], cur = null, view = "read";
+let marks = new Set(), answered = new Map();
+let stats = {};                // storyId -> {words, gram, right, total}
+let busy = false;
 
 const $ = id => document.getElementById(id);
-const keyDoc = k => `${cur.id}__${k.replace(/:/g, "_")}`;
+const docId = (sid, k) => `${sid}__${k.replace(/:/g, "_")}`;
+const lineText = l => l.map(t => t.p ?? t.t).join("");
+const shuffle = a => { const r=a.slice(); for(let i=r.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[r[i],r[j]]=[r[j],r[i]];} return r; };
 
-function shuffle(a){const r=a.slice();for(let i=r.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[r[i],r[j]]=[r[j],r[i]];}return r;}
-
-// ---------- render ----------
+// ---------------- render: story ----------------
 
 function renderStory() {
+  if (!cur) return;
+  $("lvl").textContent = LEVEL;
   $("title").textContent = cur.title;
-  $("sub").textContent = cur.note;
-  $("trans").textContent = cur.translation;
+  $("sub").textContent = cur.note || "";
+  $("trans").textContent = cur.translation || "";
 
   const box = $("story");
   box.replaceChildren();
@@ -268,72 +205,60 @@ function renderStory() {
     row.className = "line";
 
     const g = document.createElement("button");
-    g.className = "gutter";
-    g.type = "button";
-    g.setAttribute("aria-label", `Mark line ${li + 1} as hard to parse`);
+    g.className = "gutter"; g.type = "button";
+    g.setAttribute("aria-label", `Mark line ${li+1} as hard to parse`);
     g.setAttribute("aria-pressed", marks.has(`g:${li}`) ? "true" : "false");
     g.append(document.createElement("span"));
-    g.onclick = () => toggle(`g:${li}`, { type:"grammar", line: li, text: lineText(line) });
+    g.onclick = () => toggle(`g:${li}`, { type:"grammar", line:li, text:lineText(line) });
     row.append(g);
 
     const s = document.createElement("div");
     s.className = "sent" + (marks.has(`g:${li}`) ? " grammar-marked" : "");
 
     line.forEach((tk, ti) => {
-      if (tk.p) {
-        const sp = document.createElement("span");
-        sp.className = "punct"; sp.textContent = tk.p;
-        s.append(sp); return;
-      }
-      const key = `w:${li}:${ti}`;
-      const on = marks.has(key);
+      if (tk.p) { const sp=document.createElement("span"); sp.className="punct"; sp.textContent=tk.p; s.append(sp); return; }
+      const key = `w:${li}:${ti}`, on = marks.has(key);
       const b = document.createElement("button");
       b.className = "tok"; b.type = "button";
       b.setAttribute("aria-pressed", on ? "true" : "false");
-      b.setAttribute("aria-label", `${tk.t} — ${tk.m}`);
+      b.setAttribute("aria-label", `${tk.t} — ${tk.m || ""}`);
       b.textContent = tk.t;
-      b.onclick = () => toggle(key, { type:"word", line: li, text: tk.t, reading: tk.r ?? "", meaning: tk.m });
+      b.onclick = () => toggle(key, { type:"word", line:li, text:tk.t, reading:tk.r??"", meaning:tk.m??"" });
       s.append(b);
-
       if (on) {
         const gl = document.createElement("span");
         gl.className = "gloss";
-        gl.innerHTML = (tk.r ? `<span class="r">${tk.r}</span> · ` : "") + tk.m;
+        if (tk.r) { const r=document.createElement("span"); r.className="r"; r.textContent=tk.r; gl.append(r, " · "); }
+        gl.append(tk.m ?? "");
         s.append(gl);
       }
     });
-
     row.append(s);
     box.append(row);
   });
-}
 
-const lineText = line => line.map(t => t.p ?? t.t).join("");
+  renderQuiz();
+  renderActions();
+}
 
 function renderQuiz() {
   const q = $("quiz");
   q.replaceChildren();
+  if (!cur?.quiz?.length) { q.classList.add("hidden"); return; }
+  q.classList.remove("hidden");
 
-  const h = document.createElement("h2");
-  h.textContent = "Comprehension";
-  q.append(h);
+  const h = document.createElement("h2"); h.textContent = "Comprehension"; q.append(h);
 
   cur.quiz.forEach((item, qi) => {
-    const wrap = document.createElement("div");
-    wrap.className = "q";
-    const ask = document.createElement("p");
-    ask.className = "ask"; ask.textContent = `${qi + 1}. ${item.ask}`;
+    const wrap = document.createElement("div"); wrap.className = "q";
+    const ask = document.createElement("p"); ask.className="ask"; ask.textContent = `${qi+1}. ${item.ask}`;
     wrap.append(ask);
-
-    const opts = document.createElement("div");
-    opts.className = "opts";
-    const order = item.order ?? (item.order = shuffle(item.opts.map((_, i) => i)));
-
+    const opts = document.createElement("div"); opts.className = "opts";
+    const order = item._order ?? (item._order = shuffle(item.opts.map((_,i)=>i)));
     order.forEach(oi => {
       const b = document.createElement("button");
-      b.className = "opt"; b.type = "button"; b.textContent = item.opts[oi];
-      const done = answered.has(qi);
-      if (done) {
+      b.className="opt"; b.type="button"; b.textContent = item.opts[oi];
+      if (answered.has(qi)) {
         b.disabled = true;
         if (oi === item.a) b.classList.add("right");
         else if (answered.get(qi) === oi) b.classList.add("wrong");
@@ -341,105 +266,333 @@ function renderQuiz() {
       b.onclick = () => {
         if (answered.has(qi)) return;
         answered.set(qi, oi);
-        save("quiz", `${cur.id}__q${qi}`, {
-          storyId: cur.id, question: item.ask,
-          chose: item.opts[oi], correct: oi === item.a, at: new Date().toISOString()
+        write("quiz", docId(cur.id, `q${qi}`), {
+          storyId: cur.id, question: item.ask, chose: item.opts[oi],
+          correct: oi === item.a, at: new Date().toISOString()
         });
-        renderQuiz();
+        renderQuiz(); renderActions();
       };
       opts.append(b);
     });
-    wrap.append(opts);
-    q.append(wrap);
+    wrap.append(opts); q.append(wrap);
   });
 
   if (answered.size === cur.quiz.length) {
-    const right = [...answered.entries()].filter(([qi, oi]) => cur.quiz[qi].a === oi).length;
-    const s = document.createElement("div");
-    s.className = "score";
+    const right = [...answered].filter(([qi,oi]) => cur.quiz[qi].a === oi).length;
+    const s = document.createElement("div"); s.className="score";
     s.textContent = `${right} / ${cur.quiz.length} correct`;
     q.append(s);
   }
 }
 
-// ---------- persistence ----------
+function renderActions() {
+  const a = $("actions");
+  a.replaceChildren();
+  if (!cur) return;
+
+  const done = cur.quiz?.length ? answered.size === cur.quiz.length : true;
+
+  if (cur.status !== "archived") {
+    const b = document.createElement("button");
+    b.className = "btn primary"; b.type = "button";
+    b.textContent = busy ? "Writing…" : "Finish & write a new one";
+    b.disabled = busy || !sampler;
+    b.onclick = archiveAndGenerate;
+    a.append(b);
+
+    const h = document.createElement("p"); h.className = "hint";
+    h.textContent = !sampler
+      ? "Writing new stories needs the sample capability, which isn't available here."
+      : done
+        ? "Archives this one with your marks and score, then writes a fresh story."
+        : "You can finish now — the quiz above is optional.";
+    a.append(h);
+  } else {
+    const b = document.createElement("button");
+    b.className = "btn"; b.type = "button";
+    b.textContent = busy ? "Writing…" : "Write a new story";
+    b.disabled = busy || !sampler;
+    b.onclick = () => generate();
+    a.append(b);
+    const h = document.createElement("p"); h.className="hint"; h.textContent = "Archived — re-reading it is worth more than you'd think.";
+    a.append(h);
+  }
+}
+
+// ---------------- render: library ----------------
+
+function renderLibrary() {
+  const list = $("liblist");
+  list.replaceChildren();
+
+  if (!stories.length) {
+    const e = document.createElement("div"); e.className = "empty";
+    e.textContent = "No stories yet.";
+    list.append(e); return;
+  }
+
+  const mode = $("sort").value;
+  const sorted = stories.slice().sort((x, y) => {
+    const sx = stats[x.id] ?? {}, sy = stats[y.id] ?? {};
+    if (mode === "old") return (x.createdAt||"").localeCompare(y.createdAt||"");
+    if (mode === "score") {
+      const r = v => v.total ? v.right / v.total : 2;   // unattempted sorts last
+      return r(sx) - r(sy);
+    }
+    if (mode === "marks") return ((sy.words||0)+(sy.gram||0)) - ((sx.words||0)+(sx.gram||0));
+    return (y.createdAt||"").localeCompare(x.createdAt||"");
+  });
+
+  sorted.forEach(s => {
+    const st = stats[s.id] ?? {};
+    const b = document.createElement("button");
+    b.className = "row" + (cur && s.id === cur.id ? " current" : "");
+    b.type = "button";
+
+    const t = document.createElement("span"); t.className = "t"; t.textContent = s.title;
+    const m = document.createElement("span"); m.className = "meta";
+
+    const d = document.createElement("span");
+    d.textContent = (s.createdAt || s.date || "").slice(0, 10);
+    m.append(d);
+
+    if (st.words) { const w=document.createElement("span"); w.className="w"; w.textContent=`${st.words}w`; m.append(w); }
+    if (st.gram)  { const g=document.createElement("span"); g.className="g"; g.textContent=`${st.gram}L`; m.append(g); }
+    if (st.total) { const q=document.createElement("span"); q.textContent=`${st.right}/${st.total}`; m.append(q); }
+
+    b.append(t, m);
+    b.onclick = () => { open(s.id); setView("read"); };
+    list.append(b);
+  });
+}
+
+// ---------------- data ----------------
+
+function write(coll, id, data) { if (db) db.doc(`${coll}/${id}`).set(data).catch(()=>{}); }
 
 function toggle(key, payload) {
   if (marks.has(key)) {
     marks.delete(key);
-    if (db) db.doc(`marks/${keyDoc(key)}`).delete().catch(() => {});
+    if (db) db.doc(`marks/${docId(cur.id, key)}`).delete().catch(()=>{});
   } else {
     marks.add(key);
-    save("marks", keyDoc(key), { storyId: cur.id, key, ...payload, at: new Date().toISOString() });
+    write("marks", docId(cur.id, key), { storyId: cur.id, key, ...payload, at:new Date().toISOString() });
+  }
+  bumpStats();
+  renderStory();
+}
+
+function bumpStats() {
+  const s = stats[cur.id] ?? (stats[cur.id] = {});
+  s.words = [...marks].filter(k => k.startsWith("w:")).length;
+  s.gram  = [...marks].filter(k => k.startsWith("g:")).length;
+}
+
+async function open(id) {
+  cur = stories.find(s => s.id === id) ?? null;
+  marks = new Set(); answered = new Map();
+  if (!cur) return;
+  cur.quiz?.forEach(q => delete q._order);
+
+  if (db) {
+    try {
+      const snap = await db.collection("marks").where("storyId","==",id).get();
+      snap.forEach(d => { const k = d.data()?.key; if (k) marks.add(k); });
+    } catch {}
+    try {
+      const snap = await db.collection("quiz").where("storyId","==",id).get();
+      snap.forEach(d => {
+        const v = d.data(); if (!v) return;
+        const qi = Number(d.id.split("__q")[1]);
+        const oi = cur.quiz?.[qi]?.opts.indexOf(v.chose);
+        if (Number.isInteger(qi) && oi >= 0) answered.set(qi, oi);
+      });
+    } catch {}
   }
   renderStory();
 }
 
-function save(coll, id, data) {
+async function loadAll() {
   if (!db) return;
-  db.doc(`${coll}/${id}`).set(data).catch(() => {});
-}
-
-async function connect() {
-  db = await claude.use("db");
-  if (!db) return;
-  $("syncdot").className = "dot on";
-  $("sync").textContent = "marks saved";
-
   try {
-    const snap = await db.collection("marks").where("storyId", "==", cur.id).get();
-    snap.forEach(d => { const k = d.data()?.key; if (k) marks.add(k); });
+    const snap = await db.collection("stories").get();
+    stories = []; snap.forEach(d => { const v = d.data(); if (v?.lines) stories.push(v); });
   } catch {}
 
+  stats = {};
+  const bump = (id, f) => { (stats[id] ??= {words:0,gram:0,right:0,total:0})[f]++; };
   try {
-    const snap = await db.collection("quiz").where("storyId", "==", cur.id).get();
-    snap.forEach(d => {
-      const v = d.data(); if (!v) return;
-      const qi = Number(d.id.split("__q")[1]);
-      const oi = cur.quiz[qi]?.opts.indexOf(v.chose);
-      if (Number.isInteger(qi) && oi >= 0) answered.set(qi, oi);
-    });
+    const snap = await db.collection("marks").get();
+    snap.forEach(d => { const v=d.data(); if (v?.storyId) bump(v.storyId, v.type==="grammar"?"gram":"words"); });
   } catch {}
-
-  renderStory(); renderQuiz();
+  try {
+    const snap = await db.collection("quiz").get();
+    snap.forEach(d => { const v=d.data(); if (!v?.storyId) return; bump(v.storyId,"total"); if (v.correct) bump(v.storyId,"right"); });
+  } catch {}
 }
 
-// ---------- boot ----------
+// ---------------- generation ----------------
 
-const picker = $("picker");
+async function markedWords() {
+  if (!db) return [];
+  try {
+    const snap = await db.collection("marks").where("type","==","word").get();
+    const seen = new Map();
+    snap.forEach(d => { const v=d.data(); if (v?.text) seen.set(v.text, (seen.get(v.text)??0)+1); });
+    return [...seen.entries()].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([w])=>w);
+  } catch { return []; }
+}
 
-function showEmpty() {
+async function generate() {
+  if (!sampler || busy) return;
+  busy = true; renderActions();
+
+  const reuse = await markedWords();
+  const recent = stories.slice(-6).map(s => s.title);
+
+  const prompt = [
+    "You write very short graded-reader stories in Japanese for one learner.",
+    "",
+    "HARD CONSTRAINTS — breaking any of these makes the story useless:",
+    `• Use ONLY these vocabulary words: ${VOCAB.map(v => v.w).join(" ")}`,
+    `• Write kanji bare ONLY if it is in this list: ${KANJI.join("")}`,
+    "  Any word whose kanji is not listed must be written in kana.",
+    "• Grammar is strictly limited to the patterns below. Nothing else.",
+    "",
+    GRAMMAR,
+    "",
+    "CRAFT:",
+    "• 6 to 9 short sentences. One idea per sentence.",
+    "• Repetition is good pedagogy — reuse words deliberately.",
+    "• Give it a small turn: a joke, an animal behaving unreasonably, a twist.",
+    "  'Tanaka goes to school. Tanaka reads a book.' is not a story and nobody wants to read it.",
+    reuse.length ? `• Work these previously-struggled words in naturally: ${reuse.join(" ")}` : "",
+    recent.length ? `• Do NOT reuse these recent titles: ${recent.join(" / ")}` : "",
+    "",
+    "Return ONLY JSON of this exact shape:",
+    '{"title":"日本語のタイトル","note":"one short English line about the story",',
+    ' "lines":[[{"t":"word","r":"reading","m":"english meaning"},{"t":"は","m":"particle — topic"},{"p":"。"}]],',
+    ' "quiz":[{"ask":"English comprehension question","opts":["a","b","c","d"],"a":0}],',
+    ' "translation":"full English translation"}',
+    "",
+    "Rules for the JSON:",
+    "• Every token needs \"m\". Particles too — their gloss is often what an unparseable line needs.",
+    "• \"r\" only where the token contains kanji.",
+    "• Punctuation is its own token: {\"p\":\"。\"}",
+    "• Tokenise by meaningful unit, as a dictionary would.",
+    "• 3 or 4 quiz questions, in English, about WHAT HAPPENS — not what a word means.",
+    "• \"a\" is the index of the correct option."
+  ].filter(Boolean).join("\n");
+
+  try {
+    const out = await sampler.json(prompt, { modelTier: "complex" });
+    if (!out?.lines?.length) throw new Error("no story came back");
+
+    const now = new Date();
+    const story = {
+      id: `${now.toISOString().slice(0,10)}-${Math.random().toString(36).slice(2,7)}`,
+      title: out.title ?? "無題",
+      note: out.note ?? "",
+      date: now.toISOString().slice(0,10),
+      createdAt: now.toISOString(),
+      lines: out.lines,
+      quiz: Array.isArray(out.quiz) ? out.quiz : [],
+      translation: out.translation ?? "",
+      status: "active",
+      source: "in-page"
+    };
+    write("stories", story.id, story);
+    stories.push(story);
+    await openLocal(story);
+  } catch (e) {
+    const h = document.createElement("p");
+    h.className = "hint"; h.style.color = "var(--bad)";
+    h.textContent = `Couldn't write a new story: ${e?.message ?? e}. Try again, or run /nihongo-story.`;
+    $("actions").append(h);
+  } finally {
+    busy = false; renderActions();
+  }
+}
+
+async function openLocal(story) {
+  cur = story; marks = new Set(); answered = new Map();
+  renderStory();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function archiveAndGenerate() {
+  if (!cur || busy) return;
+  const right = [...answered].filter(([qi,oi]) => cur.quiz[qi]?.a === oi).length;
+  cur.status = "archived";
+  cur.archivedAt = new Date().toISOString();
+  cur.finalScore = cur.quiz?.length ? `${right}/${cur.quiz.length}` : null;
+  write("stories", cur.id, cur);
+  await generate();
+}
+
+// ---------------- views ----------------
+
+function setView(v) {
+  view = v;
+  $("v-read").setAttribute("aria-pressed", v === "read");
+  $("v-lib").setAttribute("aria-pressed", v === "lib");
+  $("readview").classList.toggle("hidden", v !== "read");
+  $("libview").classList.toggle("hidden", v !== "lib");
+  if (v === "lib") {
+    renderLibrary();
+    $("title").textContent = "Library";
+    $("sub").textContent = `${stories.length} ${stories.length === 1 ? "story" : "stories"}`;
+  } else if (cur) {
+    renderStory();
+  }
+}
+
+$("v-read").onclick = () => setView("read");
+$("v-lib").onclick  = () => setView("lib");
+$("sort").onchange  = renderLibrary;
+
+// ---------------- boot ----------------
+
+function showEmpty(msg) {
+  $("lvl").textContent = LEVEL;
   $("title").textContent = "No stories yet";
-  $("sub").textContent = "Run /nihongo-story to write your first one.";
+  $("sub").textContent = "";
+  $("howto").classList.add("hidden");
+  $("quiz").classList.add("hidden");
+  $("transblock").classList.add("hidden");
   const p = document.createElement("p");
   p.style.cssText = "font-size:.9375rem;line-height:1.6;color:var(--ink-soft);margin:0";
-  p.textContent = "Stories are built from the vocabulary and kanji you have actually " +
-    "unlocked in WaniKani — around 98% words you already know, so you can read " +
-    "rather than decode.";
+  p.textContent = msg;
   $("story").replaceChildren(p);
-  $("quiz").remove();
-  picker.style.display = "none";
-  document.querySelector(".howto").remove();
-  document.querySelector("details").closest("section").remove();
-  $("sync").textContent = "nothing to save yet";
+  renderActions();
 }
 
-if (!STORIES.length) {
-  showEmpty();
-} else {
+(async () => {
+  $("lvl").textContent = LEVEL;
 
-picker.innerHTML = STORIES.map((s, i) => `<option value="${i}">${s.title} · ${s.date}</option>`).join("");
-picker.style.display = STORIES.length > 1 ? "" : "none";
-picker.onchange = e => {
-  cur = STORIES[+e.target.value];
-  marks.clear(); answered.clear();
-  renderStory(); renderQuiz(); connect();
-};
+  db = await claude.use("db");
+  sampler = await claude.use("sample");
 
-  renderStory();
-  renderQuiz();
-  connect();
-}
+  $("syncdot").className = "dot " + (db ? "on" : "off");
+  $("sync").textContent = db ? "marks saved" : "not connected — marks won't persist";
+
+  if (!db) { showEmpty("Can't reach this page's storage, so there's nothing to read. Reopen it from your Claude artifacts."); return; }
+
+  await loadAll();
+
+  if (!stories.length) {
+    showEmpty(
+      "Stories are built from the " + VOCAB.length + " words and " + KANJI.length +
+      " kanji you've taken to Guru or above in WaniKani — around 98% words you " +
+      "already know, so you can read rather than decode."
+    );
+    return;
+  }
+
+  stories.sort((a,b) => (a.createdAt||"").localeCompare(b.createdAt||""));
+  const active = stories.filter(s => s.status !== "archived");
+  await open((active.length ? active : stories).at(-1).id);
+})();
 </script>
 </body>
 </html>
