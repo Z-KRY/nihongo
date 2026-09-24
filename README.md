@@ -69,8 +69,24 @@ A reminder you learn to ignore is worse than none. Defaults:
 Override any of it in `~/.config/nihongo/config.json`:
 
 ```json
-{ "threshold": 5, "growth": 10, "cooldownHours": 3, "quietFrom": 22, "quietTo": 7 }
+{ "threshold": 5, "growth": 10, "cooldownHours": 3,
+  "quietFrom": 22, "quietTo": 7,
+  "lessonThreshold": 5, "lessonCooldownHours": 12, "lessonDailyCap": 20 }
 ```
+
+### The lesson count, and why it may not match your dashboard
+
+WaniKani has a **Maximum Recommended Daily Lessons** setting (App Settings,
+0–100). Your dashboard shows today's metered allowance; the v2 API reports the
+entire unlocked backlog. So the dashboard can say 20 while the API says 81.
+
+That setting **isn't exposed in the API**, so set `lessonDailyCap` to match it
+by hand. The script then reports what you can actually do today — and because
+it counts how many you've started since midnight, the number goes *down* as you
+work and hits zero once you've done your daily allowance, instead of nagging
+about lessons you've capped yourself out of.
+
+Set `lessonDailyCap` to `null` to ignore the cap and report the full backlog.
 
 ## How the stories stay readable
 

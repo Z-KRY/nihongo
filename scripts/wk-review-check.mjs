@@ -40,6 +40,12 @@ const DEFAULTS = {
   notifyLessons: true,
   lessonThreshold: 5,
   lessonCooldownHours: 12,
+  // WaniKani's "Maximum Recommended Daily Lessons" (App Settings, 0-100).
+  // The v2 API reports the entire unlocked lesson backlog and does NOT expose
+  // this setting, so the dashboard can say 20 while the API says 81. Set it
+  // here to match and notifications report what you can actually do today.
+  // null = no cap, report the full backlog.
+  lessonDailyCap: null,
 };
 
 const args = new Set(process.argv.slice(2));
@@ -127,6 +133,28 @@ function availableNow(buckets, now) {
     .reduce((n, b) => n + b.subject_ids.length, 0);
 }
 
+// How many lessons were started since local midnight. A static daily cap
+// would keep reporting 20 after you'd done 15 of them; this makes the count
+// decrease as you work, and reach zero when you've hit your own limit.
+//
+// There's no started_after filter on /assignments, so filter updated_after
+// (which keeps the response small) and check started_at client-side.
+async function lessonsDoneToday(tok, now) {
+  const midnight = new Date(now);
+  midnight.setHours(0, 0, 0, 0);
+  const url = `https://api.wanikani.com/v2/assignments?updated_after=${midnight.toISOString()}`;
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${tok}`, "Wanikani-Revision": "20170710" },
+    });
+    if (!res.ok) return null;          // fall back to the uncapped number
+    const { data } = await res.json();
+    return data.filter(a => a.data.started_at && new Date(a.data.started_at) >= midnight).length;
+  } catch {
+    return null;
+  }
+}
+
 function inQuietHours(now, cfg) {
   const h = now.getHours();
   return cfg.quietFrom > cfg.quietTo
@@ -185,8 +213,22 @@ async function main() {
   const { data } = await summary(tok);
 
   const reviews = availableNow(data.reviews, now);
-  const lessons = availableNow(data.lessons, now);
+  const lessonBacklog = availableNow(data.lessons, now);
   const nextAt = data.next_reviews_at ? new Date(data.next_reviews_at) : null;
+
+  // Report what's actually doable today, not the whole backlog — being told
+  // 81 when your own daily limit is 20 is discouraging and wrong.
+  let lessons = lessonBacklog, doneToday = null, capNote = "";
+  if (cfg.lessonDailyCap != null) {
+    doneToday = await lessonsDoneToday(tok, now);
+    const remaining = doneToday == null
+      ? cfg.lessonDailyCap
+      : Math.max(0, cfg.lessonDailyCap - doneToday);
+    lessons = Math.min(lessonBacklog, remaining);
+    capNote = doneToday == null
+      ? ` (capped at ${cfg.lessonDailyCap}; couldn't check today's progress)`
+      : ` (${doneToday} done today, cap ${cfg.lessonDailyCap}, ${lessonBacklog} in backlog)`;
+  }
 
   const save = extra =>
     writeFileSync(STATE_FILE, JSON.stringify({ ...state, ...extra }, null, 2));
@@ -197,7 +239,7 @@ async function main() {
     const [wouldL, whyL] = shouldNotifyLessons(lessons, state, cfg, now);
     console.log(
       `reviews available : ${reviews}\n` +
-      `lessons available : ${lessons}\n` +
+      `lessons available : ${lessons}${capNote}\n` +
       `next reviews at   : ${nextAt ? nextAt.toLocaleString() : "—"}\n` +
       `last review ping  : ${state.lastNotifiedAt ? new Date(state.lastNotifiedAt).toLocaleString() : "never"}\n` +
       `last lesson ping  : ${state.lessonsNotifiedAt ? new Date(state.lessonsNotifiedAt).toLocaleString() : "never"}\n` +
