@@ -42,11 +42,12 @@ function token() {
     `No WaniKani token found.\n\n` +
     `  1. Create one (read-only scope is enough):\n` +
     `     https://www.wanikani.com/settings/personal_access_tokens\n\n` +
-    `  2. Save it:\n` +
-    `     mkdir -p ~/.config/nihongo\n` +
-    `     printf '%s' 'YOUR_TOKEN' > ~/.config/nihongo/wanikani.token\n` +
-    `     chmod 600 ~/.config/nihongo/wanikani.token\n\n` +
-    `Keep it outside the repo so it can't be committed.`
+    `  2. Save it without echoing to screen or shell history:\n` +
+    `     mkdir -p ~/.config/nihongo && chmod 700 ~/.config/nihongo\n` +
+    `     read -rs WK_TOKEN && printf '%s' "$WK_TOKEN" > ${path} \\\n` +
+    `       && chmod 600 ${path} && unset WK_TOKEN\n\n` +
+    `Paste at the blank line; nothing echoes. Kept outside the repo so it\n` +
+    `can't be committed.`
   );
   process.exit(1);
 }
