@@ -408,19 +408,25 @@ async function connect() {
 
 const picker = $("picker");
 
-if (!STORIES.length) {
+function showEmpty() {
   $("title").textContent = "No stories yet";
-  $("sub").textContent = "Run /nihongo-story in the nihongo repo to write your first one.";
-  $("story").innerHTML = '<p style="font-size:.9375rem;line-height:1.6;color:var(--ink-soft);margin:0">' +
-    'Stories are built from the vocabulary and kanji you\'ve actually unlocked in ' +
-    'WaniKani — around 98% words you already know, so you can read rather than decode.' +
-    '</p>';
+  $("sub").textContent = "Run /nihongo-story to write your first one.";
+  const p = document.createElement("p");
+  p.style.cssText = "font-size:.9375rem;line-height:1.6;color:var(--ink-soft);margin:0";
+  p.textContent = "Stories are built from the vocabulary and kanji you have actually " +
+    "unlocked in WaniKani — around 98% words you already know, so you can read " +
+    "rather than decode.";
+  $("story").replaceChildren(p);
   $("quiz").remove();
   picker.style.display = "none";
-  document.querySelector(".howto").style.display = "none";
+  document.querySelector(".howto").remove();
   document.querySelector("details").closest("section").remove();
-  throw new Error("no stories");   // stop boot; nothing below applies
+  $("sync").textContent = "nothing to save yet";
 }
+
+if (!STORIES.length) {
+  showEmpty();
+} else {
 
 picker.innerHTML = STORIES.map((s, i) => `<option value="${i}">${s.title} · ${s.date}</option>`).join("");
 picker.style.display = STORIES.length > 1 ? "" : "none";
@@ -430,9 +436,10 @@ picker.onchange = e => {
   renderStory(); renderQuiz(); connect();
 };
 
-renderStory();
-renderQuiz();
-connect();
+  renderStory();
+  renderQuiz();
+  connect();
+}
 </script>
 </body>
 </html>
