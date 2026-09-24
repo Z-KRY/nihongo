@@ -6,7 +6,7 @@
 //
 //   node scripts/wk-review-check.mjs            check, notify if warranted
 //   node scripts/wk-review-check.mjs --status   print state, never notify
-//   node scripts/wk-review-check.mjs --test     force a notification
+//   node scripts/wk-review-check.mjs --test     send a test notification
 //   node scripts/wk-review-check.mjs --force    ignore cooldown and quiet hours
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
@@ -23,13 +23,16 @@ const CONFIG_FILE = join(CONFIG_DIR, "config.json");
 const STATE_FILE = join(CONFIG_DIR, "notify-state.json");
 
 const DEFAULTS = {
-  // Don't nag over a trickle. WaniKani drips reviews in; being pinged for
-  // three is worse than useless because you learn to ignore the pings.
-  threshold: 5,
-  // Re-notify early if this many more have piled up since the last ping.
-  growth: 10,
-  // Otherwise stay quiet this long before nudging about the same backlog.
-  cooldownHours: 3,
+  // Flag every batch, however small. Letting reviews pile up is the classic
+  // WaniKani failure mode, and small batches are far easier to clear than a
+  // backlog of eighty. Raise this if you'd rather be told less often.
+  threshold: 1,
+  // Re-notify once this many more have appeared. WaniKani releases reviews on
+  // the hour, so the count is stable in between and 1 can't cause a flurry.
+  growth: 1,
+  // A backlog you're ignoring gets nudged this often. New reviews ping
+  // immediately via `growth` regardless.
+  cooldownHours: 2,
   // Local hours. No notifications inside this window.
   quietFrom: 22,
   quietTo: 7,
@@ -83,15 +86,7 @@ function token() {
     }
     return t;
   }
-  console.error(
-    `No WaniKani token found.\n\n` +
-    `  1. Create one (read-only scope is enough):\n` +
-    `     https://www.wanikani.com/settings/personal_access_tokens\n\n` +
-    `  2. Save it:\n` +
-    `     mkdir -p ~/.config/nihongo && chmod 700 ~/.config/nihongo\n` +
-    `     printf '%s' 'YOUR_TOKEN' > ~/.config/nihongo/wanikani.token\n` +
-    `     chmod 600 ~/.config/nihongo/wanikani.token`
-  );
+  console.error(`No WaniKani token found.\n\n` + reenterHint());
   process.exit(1);
 }
 

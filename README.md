@@ -61,8 +61,9 @@ Writes `me/vocabulary.md` — what you know and how solidly. Re-run it every wee
 
 A reminder you learn to ignore is worse than none. Defaults:
 
-- **Nothing below 5 reviews.** WaniKani drips them in; being pinged for three teaches you to dismiss pings.
-- **One ping per backlog**, then quiet for 3 hours — unless 10+ more pile up, which earns an early nudge.
+- **Every batch, however small.** Small batches are easier to clear than a backlog of eighty, and letting reviews pile up is the classic WaniKani failure mode. Raise `threshold` if you'd rather hear less.
+- **New reviews ping straight away.** WaniKani releases them on the hour, so the count is stable in between and this can't produce a flurry.
+- **A backlog you're ignoring** gets nudged every 2 hours, not continuously.
 - **Silent 22:00–07:00.**
 - **Clearing your reviews resets it**, so the next batch pings fresh instead of being swallowed by a cooldown.
 
