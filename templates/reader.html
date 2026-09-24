@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tadoku Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+<style>
+  :root {
+    --paper:     #FBFCFA;
+    --surface:   #FFFFFF;
+    --surface-2: #F0F3EF;
+    --ink:       #19201B;
+    --ink-soft:  #5B665E;
+    --ink-faint: #8B958E;
+    --line:      #E2E8E2;
+    --rule:      #D3DBD3;
+    --mark:      #FBEBBE;
+    --mark-edge: #D9A93A;
+    --gram:      #6B8CC7;
+    --gram-bg:   #E8EEF8;
+    --good:      #38705A;
+    --good-bg:   #E5EFE9;
+    --bad:       #A64F35;
+    --bad-bg:    #F7EAE5;
+    --shadow:    0 1px 2px rgba(25,32,27,.05), 0 10px 30px -18px rgba(25,32,27,.3);
+
+    --jp:   "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    --en:   "Newsreader", Georgia, serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #14170F;
+      --surface:   #1C211A;
+      --surface-2: #262C24;
+      --ink:       #E9EDE6;
+      --ink-soft:  #9DA79C;
+      --ink-faint: #6E786D;
+      --line:      #2E352C;
+      --rule:      #3A422F;
+      --mark:      #4A3C14;
+      --mark-edge: #C79B30;
+      --gram:      #91AEE2;
+      --gram-bg:   #1E2736;
+      --good:      #6EAD8E;
+      --good-bg:   #17251E;
+      --bad:       #D4836A;
+      --bad-bg:    #2A1C17;
+      --shadow:    0 1px 2px rgba(0,0,0,.35), 0 10px 30px -18px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:     #14170F;
+    --surface:   #1C211A;
+    --surface-2: #262C24;
+    --ink:       #E9EDE6;
+    --ink-soft:  #9DA79C;
+    --ink-faint: #6E786D;
+    --line:      #2E352C;
+    --rule:      #3A422F;
+    --mark:      #4A3C14;
+    --mark-edge: #C79B30;
+    --gram:      #91AEE2;
+    --gram-bg:   #1E2736;
+    --good:      #6EAD8E;
+    --good-bg:   #17251E;
+    --bad:       #D4836A;
+    --bad-bg:    #2A1C17;
+    --shadow:    0 1px 2px rgba(0,0,0,.35), 0 10px 30px -18px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--en);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 36rem;
+    margin: 0 auto;
+    padding: 1.75rem 1rem 5rem;
+    display: flex; flex-direction: column; gap: 1.5rem;
+  }
+
+  header { display: flex; flex-direction: column; gap: .3rem; }
+  .kicker {
+    font-family: var(--mono); font-size: .625rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  h1 { font-family: var(--jp); font-size: 1.5rem; font-weight: 700; margin: 0; line-height: 1.3; }
+  .sub { font-size: .875rem; font-style: italic; color: var(--ink-soft); margin: 0; }
+
+  select {
+    font: inherit; font-size: .8125rem; padding: .5rem .625rem;
+    border: 1px solid var(--line); border-radius: 9px;
+    background: var(--surface); color: var(--ink); width: 100%;
+  }
+  select:focus-visible { outline: 2px solid var(--gram); outline-offset: 1px; }
+
+  .howto {
+    background: var(--surface-2); border-radius: 11px; padding: .75rem .875rem;
+    font-size: .8125rem; line-height: 1.55; color: var(--ink-soft);
+    display: flex; flex-direction: column; gap: .3rem;
+  }
+  .howto b { color: var(--ink); font-weight: 500; }
+  .swatch {
+    display: inline-block; width: .7em; height: .7em; border-radius: 2px;
+    vertical-align: baseline; margin-right: .15em;
+  }
+  .sw-word { background: var(--mark); border: 1px solid var(--mark-edge); }
+  .sw-gram { background: var(--gram); }
+
+  /* ---- story ---- */
+  .story {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: var(--shadow); padding: 1.5rem 1.25rem;
+    display: flex; flex-direction: column; gap: .35rem;
+  }
+  .line { display: flex; gap: .5rem; align-items: flex-start; }
+  .gutter {
+    flex: 0 0 auto; width: 1.5rem; margin-top: .55rem;
+    border: 0; background: transparent; cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gutter span {
+    display: block; width: 3px; height: 1.25rem; border-radius: 2px;
+    background: var(--rule); transition: background .15s, height .15s;
+  }
+  .gutter[aria-pressed="true"] span { background: var(--gram); height: 1.6rem; }
+  .gutter:focus-visible { outline: 2px solid var(--gram); outline-offset: 2px; border-radius: 4px; }
+
+  .sent { font-family: var(--jp); font-size: 1.375rem; line-height: 2.1; flex: 1; }
+  .sent.grammar-marked { background: var(--gram-bg); border-radius: 6px; }
+
+  .tok {
+    border: 0; background: transparent; padding: 0 .04em; margin: 0;
+    font: inherit; color: inherit; cursor: pointer; border-radius: 3px;
+    position: relative; transition: background .12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tok:hover { background: var(--surface-2); }
+  .tok[aria-pressed="true"] {
+    background: var(--mark);
+    box-shadow: inset 0 -2px 0 var(--mark-edge);
+  }
+  .tok:focus-visible { outline: 2px solid var(--mark-edge); outline-offset: 1px; }
+  .punct { font-family: var(--jp); font-size: 1.375rem; }
+
+  .gloss {
+    display: block; font-family: var(--en); font-size: .75rem;
+    color: var(--ink-soft); line-height: 1.3; font-style: italic;
+    margin-top: -.15rem;
+  }
+  .gloss .r { font-family: var(--jp); font-style: normal; color: var(--ink-faint); }
+
+  /* ---- quiz ---- */
+  section.block {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;
+  }
+  h2 {
+    font-family: var(--mono); font-size: .625rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-faint); margin: 0; font-weight: 400;
+  }
+  .q { display: flex; flex-direction: column; gap: .5rem; }
+  .q .ask { font-size: 1rem; margin: 0; }
+  .opts { display: flex; flex-direction: column; gap: .375rem; }
+  .opt {
+    font: inherit; font-size: .9375rem; text-align: left; cursor: pointer;
+    padding: .625rem .75rem; border-radius: 9px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    transition: background .12s, border-color .12s;
+  }
+  .opt:hover:not(:disabled) { background: var(--surface-2); }
+  .opt:disabled { cursor: default; opacity: .55; }
+  .opt.right { background: var(--good-bg); border-color: var(--good); color: var(--good); opacity: 1; }
+  .opt.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); opacity: 1; }
+  .opt:focus-visible { outline: 2px solid var(--gram); outline-offset: 1px; }
+
+  .score {
+    font-family: var(--mono); font-size: .8125rem; color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  details { border-top: 1px solid var(--line); padding-top: .875rem; }
+  summary {
+    cursor: pointer; font-family: var(--mono); font-size: .625rem;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  summary:focus-visible { outline: 2px solid var(--gram); outline-offset: 2px; }
+  details p { font-size: .9375rem; line-height: 1.6; color: var(--ink-soft); }
+
+  footer {
+    font-family: var(--mono); font-size: .625rem; letter-spacing: .05em;
+    color: var(--ink-faint); text-align: center; line-height: 1.8;
+  }
+  .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: .35em; vertical-align: middle; }
+  .on { background: var(--good); } .off { background: var(--ink-faint); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="kicker">多読 · extensive reading</span>
+    <h1 id="title">…</h1>
+    <p class="sub" id="sub"></p>
+  </header>
+
+  <select id="picker" aria-label="Choose a story"></select>
+
+  <div class="howto">
+    <div><span class="swatch sw-word"></span> <b>Tap a word</b> you didn't know — it highlights and shows its reading.</div>
+    <div><span class="swatch sw-gram"></span> <b>Tap the bar</b> beside a line whose grammar didn't parse, even if you knew every word.</div>
+    <div style="color:var(--ink-faint)">The two mean different things: words are a vocabulary gap, lines are a grammar gap. They get fixed differently.</div>
+  </div>
+
+  <div class="story" id="story"></div>
+
+  <section class="block" id="quiz"></section>
+
+  <section class="block">
+    <details>
+      <summary>Translation — after you've tried</summary>
+      <p id="trans"></p>
+    </details>
+  </section>
+
+  <footer>
+    <span id="syncdot" class="dot off"></span><span id="sync">marks saved on this device only</span>
+  </footer>
+</div>
+
+<script>
+const STORIES = [
+  // Stories land here, newest first. Run /nihongo-story to add one.
+];
+
+let db = null;
+let cur = STORIES[0];
+const marks = new Set();   // "w:<line>:<tok>" | "g:<line>"
+const answered = new Map();
+
+const $ = id => document.getElementById(id);
+const keyDoc = k => `${cur.id}__${k.replace(/:/g, "_")}`;
+
+function shuffle(a){const r=a.slice();for(let i=r.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+// ---------- render ----------
+
+function renderStory() {
+  $("title").textContent = cur.title;
+  $("sub").textContent = cur.note;
+  $("trans").textContent = cur.translation;
+
+  const box = $("story");
+  box.replaceChildren();
+
+  cur.lines.forEach((line, li) => {
+    const row = document.createElement("div");
+    row.className = "line";
+
+    const g = document.createElement("button");
+    g.className = "gutter";
+    g.type = "button";
+    g.setAttribute("aria-label", `Mark line ${li + 1} as hard to parse`);
+    g.setAttribute("aria-pressed", marks.has(`g:${li}`) ? "true" : "false");
+    g.append(document.createElement("span"));
+    g.onclick = () => toggle(`g:${li}`, { type:"grammar", line: li, text: lineText(line) });
+    row.append(g);
+
+    const s = document.createElement("div");
+    s.className = "sent" + (marks.has(`g:${li}`) ? " grammar-marked" : "");
+
+    line.forEach((tk, ti) => {
+      if (tk.p) {
+        const sp = document.createElement("span");
+        sp.className = "punct"; sp.textContent = tk.p;
+        s.append(sp); return;
+      }
+      const key = `w:${li}:${ti}`;
+      const on = marks.has(key);
+      const b = document.createElement("button");
+      b.className = "tok"; b.type = "button";
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.setAttribute("aria-label", `${tk.t} — ${tk.m}`);
+      b.textContent = tk.t;
+      b.onclick = () => toggle(key, { type:"word", line: li, text: tk.t, reading: tk.r ?? "", meaning: tk.m });
+      s.append(b);
+
+      if (on) {
+        const gl = document.createElement("span");
+        gl.className = "gloss";
+        gl.innerHTML = (tk.r ? `<span class="r">${tk.r}</span> · ` : "") + tk.m;
+        s.append(gl);
+      }
+    });
+
+    row.append(s);
+    box.append(row);
+  });
+}
+
+const lineText = line => line.map(t => t.p ?? t.t).join("");
+
+function renderQuiz() {
+  const q = $("quiz");
+  q.replaceChildren();
+
+  const h = document.createElement("h2");
+  h.textContent = "Comprehension";
+  q.append(h);
+
+  cur.quiz.forEach((item, qi) => {
+    const wrap = document.createElement("div");
+    wrap.className = "q";
+    const ask = document.createElement("p");
+    ask.className = "ask"; ask.textContent = `${qi + 1}. ${item.ask}`;
+    wrap.append(ask);
+
+    const opts = document.createElement("div");
+    opts.className = "opts";
+    const order = item.order ?? (item.order = shuffle(item.opts.map((_, i) => i)));
+
+    order.forEach(oi => {
+      const b = document.createElement("button");
+      b.className = "opt"; b.type = "button"; b.textContent = item.opts[oi];
+      const done = answered.has(qi);
+      if (done) {
+        b.disabled = true;
+        if (oi === item.a) b.classList.add("right");
+        else if (answered.get(qi) === oi) b.classList.add("wrong");
+      }
+      b.onclick = () => {
+        if (answered.has(qi)) return;
+        answered.set(qi, oi);
+        save("quiz", `${cur.id}__q${qi}`, {
+          storyId: cur.id, question: item.ask,
+          chose: item.opts[oi], correct: oi === item.a, at: new Date().toISOString()
+        });
+        renderQuiz();
+      };
+      opts.append(b);
+    });
+    wrap.append(opts);
+    q.append(wrap);
+  });
+
+  if (answered.size === cur.quiz.length) {
+    const right = [...answered.entries()].filter(([qi, oi]) => cur.quiz[qi].a === oi).length;
+    const s = document.createElement("div");
+    s.className = "score";
+    s.textContent = `${right} / ${cur.quiz.length} correct`;
+    q.append(s);
+  }
+}
+
+// ---------- persistence ----------
+
+function toggle(key, payload) {
+  if (marks.has(key)) {
+    marks.delete(key);
+    if (db) db.doc(`marks/${keyDoc(key)}`).delete().catch(() => {});
+  } else {
+    marks.add(key);
+    save("marks", keyDoc(key), { storyId: cur.id, key, ...payload, at: new Date().toISOString() });
+  }
+  renderStory();
+}
+
+function save(coll, id, data) {
+  if (!db) return;
+  db.doc(`${coll}/${id}`).set(data).catch(() => {});
+}
+
+async function connect() {
+  db = await claude.use("db");
+  if (!db) return;
+  $("syncdot").className = "dot on";
+  $("sync").textContent = "marks saved";
+
+  try {
+    const snap = await db.collection("marks").where("storyId", "==", cur.id).get();
+    snap.forEach(d => { const k = d.data()?.key; if (k) marks.add(k); });
+  } catch {}
+
+  try {
+    const snap = await db.collection("quiz").where("storyId", "==", cur.id).get();
+    snap.forEach(d => {
+      const v = d.data(); if (!v) return;
+      const qi = Number(d.id.split("__q")[1]);
+      const oi = cur.quiz[qi]?.opts.indexOf(v.chose);
+      if (Number.isInteger(qi) && oi >= 0) answered.set(qi, oi);
+    });
+  } catch {}
+
+  renderStory(); renderQuiz();
+}
+
+// ---------- boot ----------
+
+const picker = $("picker");
+
+if (!STORIES.length) {
+  $("title").textContent = "No stories yet";
+  $("sub").textContent = "Run /nihongo-story in the nihongo repo to write your first one.";
+  $("story").innerHTML = '<p style="font-size:.9375rem;line-height:1.6;color:var(--ink-soft);margin:0">' +
+    'Stories are built from the vocabulary and kanji you\'ve actually unlocked in ' +
+    'WaniKani — around 98% words you already know, so you can read rather than decode.' +
+    '</p>';
+  $("quiz").remove();
+  picker.style.display = "none";
+  document.querySelector(".howto").style.display = "none";
+  document.querySelector("details").closest("section").remove();
+  throw new Error("no stories");   // stop boot; nothing below applies
+}
+
+picker.innerHTML = STORIES.map((s, i) => `<option value="${i}">${s.title} · ${s.date}</option>`).join("");
+picker.style.display = STORIES.length > 1 ? "" : "none";
+picker.onchange = e => {
+  cur = STORIES[+e.target.value];
+  marks.clear(); answered.clear();
+  renderStory(); renderQuiz(); connect();
+};
+
+renderStory();
+renderQuiz();
+connect();
+</script>
+</body>
+</html>

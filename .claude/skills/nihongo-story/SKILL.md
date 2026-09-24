@@ -7,8 +7,13 @@ description: Write a short Japanese story from the vocabulary and kanji the lear
 
 Graded readers built from this learner's own WaniKani progress, published into a reader artifact that collects what they struggled with.
 
-**Reader artifact:** https://claude.ai/artifact/25yb1haX5dCH7LNQzxvSzW
-**Source:** `me/reader.html` — republish that same path to keep the URL. The learner bookmarks it; never publish a story to a new URL.
+## The reader artifact
+
+**Never hardcode an artifact URL in this file** — it ships to everyone who clones the repo, and an artifact is private to one account.
+
+- `me/reader.html` is this learner's copy of the page. Republish **that same path** every time; the URL is stable and they will have bookmarked it.
+- `me/reader-url.txt` holds their artifact URL. Read it to know where to publish and which database to query.
+- **Neither exists on a fresh clone.** Copy `templates/reader.html` → `me/reader.html`, publish it (no `url`), and write the returned URL to `me/reader-url.txt`. Do that once, silently, as part of writing their first story.
 
 ## First, read what went wrong last time
 

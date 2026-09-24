@@ -9,14 +9,29 @@ WaniKani is the curriculum. These don't compete with it.
 
 ## Setup
 
-**1. Get a WaniKani token** — [wanikani.com/settings/personal_access_tokens](https://www.wanikani.com/settings/personal_access_tokens). Read-only scope is enough.
+```bash
+git clone https://github.com/Z-KRY/nihongo.git && cd nihongo && claude
+```
+
+Then `/nihongo-setup` — it walks the five steps below and does the ones it can.
+
+Three of them need you, not Claude: creating the token, confirming a
+notification actually appeared on screen, and telling it your WaniKani daily
+lesson limit (the API doesn't expose that one).
+
+**Requirements:** macOS, Node, and a WaniKani subscription.
+
+<details>
+<summary>Doing it by hand instead</summary>
+
+**1. Token** — [wanikani.com/settings/personal_access_tokens](https://www.wanikani.com/settings/personal_access_tokens), read-only scope.
 
 ```bash
 mkdir -p ~/.config/nihongo && chmod 700 ~/.config/nihongo
 read -rs WK_TOKEN && printf '%s' "$WK_TOKEN" > ~/.config/nihongo/wanikani.token && chmod 600 ~/.config/nihongo/wanikani.token && unset WK_TOKEN
 ```
 
-Paste the token at the blank line — nothing echoes, which is correct — then Enter.
+Paste at the blank line — nothing echoes, which is correct — then Enter.
 
 `read -rs` rather than a placeholder you edit in: a placeholder invites being
 run verbatim, which silently writes a dead token, and it puts the real one in
@@ -24,13 +39,13 @@ your shell history when it doesn't. This way the token never appears on screen,
 in history, or in a chat transcript. It's kept outside the repo so it can't be
 committed.
 
-**2. Check notifications actually work** before trusting a schedule to them:
+**2. Check notifications work** before trusting a schedule to them:
 
 ```bash
 node scripts/wk-review-check.mjs --test
 ```
 
-If nothing appears, allow notifications for **Script Editor** in System Settings → Notifications. macOS attributes `osascript` notifications to it.
+If nothing appears, allow notifications for **Script Editor** in System Settings → Notifications. macOS attributes `osascript` notifications to it, and the failure is otherwise silent.
 
 **3. Install the agent:**
 
@@ -38,7 +53,7 @@ If nothing appears, allow notifications for **Script Editor** in System Settings
 ./scripts/install-agent.sh
 ```
 
-Checks every 15 minutes. Pass seconds to change it (`./scripts/install-agent.sh 1800`), or `--uninstall` to remove.
+Every 15 minutes. Pass seconds to change it (`./scripts/install-agent.sh 1800`), or `--uninstall`.
 
 **4. Pull your progress:**
 
@@ -46,7 +61,9 @@ Checks every 15 minutes. Pass seconds to change it (`./scripts/install-agent.sh 
 node scripts/wanikani-pull.mjs
 ```
 
-Writes `me/vocabulary.md` — what you know and how solidly. Re-run it every week or two.
+Writes `me/vocabulary.md`. Re-run weekly.
+
+</details>
 
 ## Daily use
 
@@ -103,6 +120,7 @@ Grammar is capped by [reference/story-grammar.md](reference/story-grammar.md) �
 ## Layout
 
 ```
+templates/reader.html         the reader page, story-free — copied to me/ on first run
 scripts/wk-review-check.mjs   the scheduled check + notification
 scripts/install-agent.sh      launchd agent install/uninstall
 scripts/wanikani-pull.mjs     pulls progress → me/vocabulary.md
@@ -116,3 +134,17 @@ Troubleshooting the agent:
 launchctl print gui/$UID/com.nihongo.wanikani-reviews | head -20
 cat ~/.config/nihongo/agent.err.log
 ```
+
+## Sharing it
+
+Everything personal is gitignored — your WaniKani pull, your stories, your
+reader page and its artifact URL. A clone starts empty and `/nihongo-setup`
+builds it, so the repo is safe to hand to anyone.
+
+Two things deliberately **don't** travel:
+
+- **Your token.** It lives in `~/.config/nihongo/`, never in the repo.
+- **Your reader artifact.** It's private to your Claude account and holds your
+  vocabulary, so the URL is no use to anyone else. `/nihongo-story` publishes a
+  fresh one per person from `templates/reader.html` and records it in
+  `me/reader-url.txt`.
