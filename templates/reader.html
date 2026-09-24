@@ -368,7 +368,16 @@ function renderLibrary() {
 
 // ---------------- data ----------------
 
-function write(coll, id, data) { if (db) db.doc(`${coll}/${id}`).set(data).catch(()=>{}); }
+function warn(msg) {
+  console.error("[reader]", msg);
+  const f = $("sync");
+  if (f) { f.textContent = msg; $("syncdot").className = "dot off"; }
+}
+
+function write(coll, id, data) {
+  if (!db) return;
+  db.doc(`${coll}/${id}`).set(data).catch(e => warn(`Couldn't save: ${e?.message ?? e}`));
+}
 
 function toggle(key, payload) {
   if (marks.has(key)) {
@@ -397,17 +406,17 @@ async function open(id) {
   if (db) {
     try {
       const snap = await db.collection("marks").where("storyId","==",id).get();
-      snap.forEach(d => { const k = d.data()?.key; if (k) marks.add(k); });
-    } catch {}
+      snap.docs.forEach(d => { const k = d.data()?.key; if (k) marks.add(k); });
+    } catch (e) { warn(`Read failed: ${e?.message ?? e}`); }
     try {
       const snap = await db.collection("quiz").where("storyId","==",id).get();
-      snap.forEach(d => {
+      snap.docs.forEach(d => {
         const v = d.data(); if (!v) return;
         const qi = Number(d.id.split("__q")[1]);
         const oi = cur.quiz?.[qi]?.opts.indexOf(v.chose);
         if (Number.isInteger(qi) && oi >= 0) answered.set(qi, oi);
       });
-    } catch {}
+    } catch (e) { warn(`Read failed: ${e?.message ?? e}`); }
   }
   renderStory();
 }
@@ -416,19 +425,19 @@ async function loadAll() {
   if (!db) return;
   try {
     const snap = await db.collection("stories").get();
-    stories = []; snap.forEach(d => { const v = d.data(); if (v?.lines) stories.push(v); });
-  } catch {}
+    stories = []; snap.docs.forEach(d => { const v = d.data(); if (v?.lines) stories.push(v); });
+  } catch (e) { warn(`Couldn't load stories: ${e?.message ?? e}`); }
 
   stats = {};
   const bump = (id, f) => { (stats[id] ??= {words:0,gram:0,right:0,total:0})[f]++; };
   try {
     const snap = await db.collection("marks").get();
-    snap.forEach(d => { const v=d.data(); if (v?.storyId) bump(v.storyId, v.type==="grammar"?"gram":"words"); });
-  } catch {}
+    snap.docs.forEach(d => { const v=d.data(); if (v?.storyId) bump(v.storyId, v.type==="grammar"?"gram":"words"); });
+  } catch (e) { warn(`Read failed: ${e?.message ?? e}`); }
   try {
     const snap = await db.collection("quiz").get();
-    snap.forEach(d => { const v=d.data(); if (!v?.storyId) return; bump(v.storyId,"total"); if (v.correct) bump(v.storyId,"right"); });
-  } catch {}
+    snap.docs.forEach(d => { const v=d.data(); if (!v?.storyId) return; bump(v.storyId,"total"); if (v.correct) bump(v.storyId,"right"); });
+  } catch (e) { warn(`Read failed: ${e?.message ?? e}`); }
 }
 
 // ---------------- generation ----------------
@@ -438,9 +447,9 @@ async function markedWords() {
   try {
     const snap = await db.collection("marks").where("type","==","word").get();
     const seen = new Map();
-    snap.forEach(d => { const v=d.data(); if (v?.text) seen.set(v.text, (seen.get(v.text)??0)+1); });
+    snap.docs.forEach(d => { const v=d.data(); if (v?.text) seen.set(v.text, (seen.get(v.text)??0)+1); });
     return [...seen.entries()].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([w])=>w);
-  } catch { return []; }
+  } catch (e) { warn(`Read failed: ${e?.message ?? e}`); return []; }
 }
 
 async function generate() {
