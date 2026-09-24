@@ -107,6 +107,24 @@ about lessons you've capped yourself out of.
 
 Set `lessonDailyCap` to `null` to ignore the cap and report the full backlog.
 
+## The reader
+
+Stories live in a private artifact — a page holding everything you've read, with a **Library** view you can sort by date, lowest quiz score, or most-marked.
+
+Reading a story, you can **tap a word** you didn't know (it highlights and shows its reading) or **tap the bar beside a line** whose grammar didn't parse even though you knew every word. Those mean different things — a vocabulary gap and a grammar gap — and get fixed in opposite directions.
+
+At the bottom: **Finish & write a new one**. It archives the current story with your marks and score, then writes a fresh one on the spot. No terminal, which is the point when you're reading on a phone.
+
+Those in-page stories use the same vocabulary and grammar limits but can't adapt — the page can't read your marks and reason about them, or decide the grammar floor should come down. `/nihongo-story` is what moves your level; the button keeps the habit alive between sessions.
+
+Rebuild and republish the page only when your **vocabulary** changes:
+
+```bash
+node scripts/wanikani-pull.mjs && node scripts/build-reader.mjs
+```
+
+Adding a story needs no republish — stories live in the page's database.
+
 ## How the stories stay readable
 
 **Around 98% of the words are ones you already know.** That's the extensive-reading threshold — below roughly 95%, reading turns into decoding with a dictionary and people quit. So a story carries at most one or two unfamiliar items, inferable from context.
@@ -120,7 +138,8 @@ Grammar is capped by [reference/story-grammar.md](reference/story-grammar.md) �
 ## Layout
 
 ```
-templates/reader.html         the reader page, story-free — copied to me/ on first run
+templates/reader.html         the reader page — built into me/ with your vocabulary
+scripts/build-reader.mjs      injects your Guru+ vocabulary + grammar floor into it
 scripts/wk-review-check.mjs   the scheduled check + notification
 scripts/install-agent.sh      launchd agent install/uninstall
 scripts/wanikani-pull.mjs     pulls progress → me/vocabulary.md
