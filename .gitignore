@@ -1,17 +1,9 @@
-# Personal study state. Created by /nihongo-setup, never committed to the
-# shared template — otherwise everyone who clones this inherits someone
-# else's profile, journal and review schedule.
-#
-# Want your own progress backed up and versioned? Add a PRIVATE second remote
-# and force-add it there:
-#   git remote add private git@github.com:<you>/nihongo-me.git
-#   git add -f me/ && git commit -m "my state" && git push private main
+# Personal state: WaniKani pull, generated stories. Gitignored so a clone
+# starts clean and nobody inherits someone else's progress.
 me/
 
-# Buddy profiles are other people's data. Keep them local.
-buddies/*.profile.md
-
-# Generated buddy session plans
-shared/
+# Pre-rebuild tutoring apparatus. Kept locally until confirmed unwanted;
+# tracked files are also recoverable from the archive/tutor-v1 tag.
+me.archive-*/
 
 .DS_Store
