@@ -13,11 +13,16 @@ WaniKani is the curriculum. These don't compete with it.
 
 ```bash
 mkdir -p ~/.config/nihongo && chmod 700 ~/.config/nihongo
-printf '%s' 'YOUR_TOKEN' > ~/.config/nihongo/wanikani.token
-chmod 600 ~/.config/nihongo/wanikani.token
+read -rs WK_TOKEN && printf '%s' "$WK_TOKEN" > ~/.config/nihongo/wanikani.token && chmod 600 ~/.config/nihongo/wanikani.token && unset WK_TOKEN
 ```
 
-Kept outside the repo so it can't be committed.
+Paste the token at the blank line — nothing echoes, which is correct — then Enter.
+
+`read -rs` rather than a placeholder you edit in: a placeholder invites being
+run verbatim, which silently writes a dead token, and it puts the real one in
+your shell history when it doesn't. This way the token never appears on screen,
+in history, or in a chat transcript. It's kept outside the repo so it can't be
+committed.
 
 **2. Check notifications actually work** before trusting a schedule to them:
 

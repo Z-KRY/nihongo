@@ -49,9 +49,34 @@ function readJSON(path, fallback) {
   try { return JSON.parse(readFileSync(path, "utf8")); } catch { return fallback; }
 }
 
+// WaniKani tokens are UUIDs. Anything else in the file is almost certainly a
+// setup instruction that got run verbatim — say so, rather than letting it
+// fail as an opaque 401 every 15 minutes.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function reenterHint() {
+  return `Re-enter it without echoing to screen or shell history:\n\n` +
+    `  read -rs WK_TOKEN && printf '%s' "$WK_TOKEN" > ${TOKEN_FILE} \\\n` +
+    `    && chmod 600 ${TOKEN_FILE} && unset WK_TOKEN\n\n` +
+    `Token: https://www.wanikani.com/settings/personal_access_tokens`;
+}
+
 function token() {
   if (process.env.WANIKANI_TOKEN) return process.env.WANIKANI_TOKEN.trim();
-  if (existsSync(TOKEN_FILE)) return readFileSync(TOKEN_FILE, "utf8").trim();
+  if (existsSync(TOKEN_FILE)) {
+    const t = readFileSync(TOKEN_FILE, "utf8").trim();
+    if (!UUID.test(t)) {
+      console.error(
+        `The token file doesn't contain a WaniKani token.\n\n` +
+        `  ${TOKEN_FILE}\n` +
+        `  contains: ${JSON.stringify(t.slice(0, 24))}${t.length > 24 ? "…" : ""}\n\n` +
+        `A WaniKani token is a UUID. If that looks like placeholder text, a setup\n` +
+        `command was run without substituting the real token.\n\n` + reenterHint()
+      );
+      process.exit(1);
+    }
+    return t;
+  }
   console.error(
     `No WaniKani token found.\n\n` +
     `  1. Create one (read-only scope is enough):\n` +
